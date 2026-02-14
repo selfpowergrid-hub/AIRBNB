@@ -4,13 +4,21 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import Footer from "@/components/layout/Footer";
 import AccommodationSection from "@/components/home/AccommodationSection";
 import AmenitiesSection from "@/components/home/AmenitiesSection";
 import ParkAndFlySection from "@/components/home/ParkAndFlySection";
-import AIAssistantWidget from "@/components/features/AIAssistantWidget";
-import BookingModal from "@/components/features/BookingModal";
 import { ArrowRight, Plane, ShieldCheck, Clock, MapPin } from "lucide-react";
+
+// Dynamically import heavy components
+const BookingModal = dynamic(() => import("@/components/features/BookingModal"), {
+  ssr: false,
+});
+
+const AIAssistantWidget = dynamic(() => import("@/components/features/AIAssistantWidget"), {
+  ssr: false,
+});
 
 export default function Home() {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
@@ -96,7 +104,7 @@ export default function Home() {
             <Clock size={24} className="text-brand-teal cursor-pointer" />
           </div>
           <h3 className="font-bold text-gray-900 text-lg">How do I book?</h3>
-          <p className="text-gray-600 text-sm">Instant confirmation via our engine or call <strong className="text-brand-teal">0720 322 173</strong>. M-Pesa enabled.</p>
+          <p className="text-gray-600 text-sm">Instant confirmation via our engine or call <strong className="text-brand-teal">0757717616</strong>. M-Pesa enabled.</p>
         </div>
       </section>
 
@@ -112,8 +120,8 @@ export default function Home() {
           <h2 className="text-4xl font-bold mb-6">Ready to Experience Port Hill?</h2>
           <p className="text-xl mb-8 opacity-90">Secure your stay or parking spot today and travel with zero stress.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="tel:0720322173" className="bg-white text-brand-teal px-8 py-3 rounded-full font-bold hover:bg-gray-100 transition-colors">
-              Call 0720 322 173
+            <a href="tel:0757717616" className="bg-white text-brand-teal px-8 py-3 rounded-full font-bold hover:bg-gray-100 transition-colors">
+              Call 0757717616
             </a>
             <button
               onClick={() => handleOpenBooking()}

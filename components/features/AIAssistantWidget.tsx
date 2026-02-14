@@ -19,7 +19,7 @@ const KNOWLEDGE_BASE = [
     },
     {
         keywords: ['book', 'price', 'availability', 'cost', 'reserve'],
-        response: "You can check availability directly on our site using the 'Check Availability' button, or call/WhatsApp us at 0720 322 173 for instant rates."
+        response: "You can check availability directly on our site using the 'Check Availability' button, or call/WhatsApp us at 0757717616 for instant rates."
     },
     {
         keywords: ['wifi', 'internet', 'netflix', 'tv'],
@@ -174,7 +174,7 @@ const AIAssistantWidget = () => {
                         </div>
                         <div className="mt-3">
                             <a
-                                href="https://wa.me/254720322173?text=Hi%20Port%20Hill%2C%20I'm%20coming%20from%20the%20website%20and%20have%20a%20question..."
+                                href="https://wa.me/254757717616?text=Hi%20Port%20Hill%2C%20I'm%20coming%20from%20the%20website%20and%20have%20a%20question..."
                                 className="flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-brand-teal transition-colors"
                             >
                                 <MessageCircle size={14} className="text-[#25D366]" /> Talk to a Human instead <ArrowRight size={10} />

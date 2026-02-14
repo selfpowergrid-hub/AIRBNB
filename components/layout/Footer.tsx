@@ -43,8 +43,7 @@ const Footer = () => {
                                 <span className="text-gray-300">600m from Eldoret International Airport (Departure Gate)</span>
                             </li>
                             <li className="flex items-center gap-3">
-                                <Phone className="text-brand-teal" size={20} />
-                                <a href="tel:0720322173" className="text-gray-300 hover:text-brand-teal transition-colors">0720 322 173</a>
+                                <a href="tel:0757717616" className="text-gray-300 hover:text-brand-teal transition-colors">0757717616</a>
                             </li>
                             <li className="flex items-center gap-3">
                                 <Mail className="text-brand-teal" size={20} />
@@ -60,7 +59,7 @@ const Footer = () => {
                         <a href="https://facebook.com/porthillguest" target="_blank" rel="noopener noreferrer" className="hover:text-brand-teal transition-all hover:scale-110">
                             <Facebook size={22} />
                         </a>
-                        <a href="https://wa.me/254720322173?text=Hi%20Port%20Hill%2C%20I'm%20interested%20in%20booking..." target="_blank" rel="noopener noreferrer" className="hover:text-brand-teal transition-all hover:scale-110">
+                        <a href="https://wa.me/254757717616?text=Hi%20Port%20Hill%2C%20I'm%20interested%20in%20booking..." target="_blank" rel="noopener noreferrer" className="hover:text-brand-teal transition-all hover:scale-110">
                             <MessageCircle size={22} />
                         </a>
                     </div>

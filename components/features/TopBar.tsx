@@ -11,13 +11,13 @@ const TopBar = () => {
                 <div className="hidden sm:flex items-center gap-4">
                     <a href="mailto:book@porthill.co.ke" className="hover:text-gray-100 transition-colors">book@porthill.co.ke</a>
                     <span>|</span>
-                    <a href="tel:0720322173" className="hover:text-gray-100 transition-colors">0720 322 173</a>
+                    <a href="tel:0757717616" className="hover:text-gray-100 transition-colors">0757717616</a>
                     <span>|</span>
                     <div className="flex items-center gap-3 ml-2">
                         <a href="https://facebook.com/porthillguest" target="_blank" rel="noopener noreferrer" className="hover:text-gray-100 transition-colors">
                             <Facebook size={14} />
                         </a>
-                        <a href="https://wa.me/254720322173?text=Hi%20Port%20Hill%2C%20quick%20question..." target="_blank" rel="noopener noreferrer" className="hover:text-gray-100 transition-colors">
+                        <a href="https://wa.me/254757717616?text=Hi%20Port%20Hill%2C%20quick%20question..." target="_blank" rel="noopener noreferrer" className="hover:text-gray-100 transition-colors">
                             <MessageCircle size={14} />
                         </a>
                     </div>
