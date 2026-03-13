@@ -2,11 +2,12 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import Footer from "@/components/layout/Footer";
 import AccommodationSection from "@/components/home/AccommodationSection";
+import RestaurantSection from "@/components/home/RestaurantSection";
 import AmenitiesSection from "@/components/home/AmenitiesSection";
 import ParkAndFlySection from "@/components/home/ParkAndFlySection";
 import { ArrowRight, Plane, ShieldCheck, Clock, MapPin } from "lucide-react";
@@ -24,6 +25,25 @@ export default function Home() {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState<string | undefined>(undefined);
 
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const heroImages = [
+    "/assets/Hero/DSC_2681.jpg",
+    "/assets/Hero/DSC_2695.jpg",
+    "/assets/Hero/DSC_2797 (1).jpg",
+    "/assets/Hero/DSC_2860.jpg",
+    "/assets/Hero/_DSC9585 (1).jpg",
+    "/assets/Hero/porthill-welcome.png"
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % heroImages.length);
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [heroImages.length]);
+
   const handleOpenBooking = (roomId?: string) => {
     setSelectedRoomId(roomId);
     setIsBookingOpen(true);
@@ -40,22 +60,31 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="relative h-[85vh] w-full flex items-center justify-center overflow-hidden">
-        {/* Background Image/Video */}
-        <div className="absolute inset-0 z-0">
-          <Image
-            src="/assets/porthill-welcome.png"
-            alt="Welcome to Port Hill Guest House"
-            fill
-            className="object-cover object-top brightness-50 animate-ken-burns"
-            priority
-          />
+        {/* Background Image Carousel */}
+        <div className="absolute inset-0 z-0 bg-black">
+          {heroImages.map((src, index) => (
+            <div
+              key={src}
+              className={`absolute inset-0 transition-opacity duration-[1500ms] ease-in-out ${
+                index === currentImageIndex ? "opacity-100" : "opacity-0"
+              }`}
+            >
+              <Image
+                src={src}
+                alt="Port Hill Guest House Welcome"
+                fill
+                className="object-cover object-center brightness-50 animate-ken-burns"
+                priority={index === 0}
+              />
+            </div>
+          ))}
           <div className="absolute inset-0 bg-gradient-to-t from-brand-dark/90 via-transparent to-black/30" />
         </div>
 
         <div className="relative z-10 text-center max-w-4xl px-4 sm:px-6 lg:px-8 space-y-6">
           <div className="inline-flex items-center gap-2 bg-brand-teal/90 text-white px-4 py-1.5 rounded-full text-sm font-semibold mb-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <Plane size={16} className="animate-pulse" />
-            <span>600m from Eldoret International Airport</span>
+            <span>3 mins from Eldoret International Airport • 100 meters off tarmac</span>
           </div>
 
           <h1 className="text-4xl md:text-6xl font-extrabold text-white tracking-tight leading-tight">
@@ -63,8 +92,7 @@ export default function Home() {
           </h1>
 
           <p className="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto">
-            Efficiency studios, executive villas, and secure park-and-fly services.
-            <strong> Where are you?</strong> 3 minutes from the gate.
+            Premium efficiency studios, an executive Airbnb, a vibrant <strong>Lounge Area</strong>, and ample secure parking. Perfectly positioned just <strong>3 minutes from the gates of Eldoret International Airport</strong>, and a mere 100 meters off the tarmac.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
@@ -75,7 +103,7 @@ export default function Home() {
               Check Availability <ArrowRight size={20} />
             </button>
             <a href="#park-fly" className="bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/30 text-white text-lg px-8 py-3 rounded-full font-bold transition-all flex items-center justify-center gap-2">
-              Park & Fly Info
+              Secure Parking Info
             </a>
           </div>
         </div>
@@ -88,14 +116,14 @@ export default function Home() {
             <MapPin size={24} className="text-brand-teal" />
           </div>
           <h3 className="font-bold text-gray-900 text-lg">Where am I?</h3>
-          <p className="text-gray-600 text-sm">Located on the airport road, exactly <strong className="text-brand-teal">600m</strong> from the main gate. You can't get closer without a boarding pass.</p>
+          <p className="text-gray-600 text-sm">Located on the airport road, exactly <strong className="text-brand-teal">3 mins</strong> from the main gate and <strong className="text-brand-teal">100 meters</strong> off the tarmac. You can't get closer without a boarding pass.</p>
         </div>
         <div className="p-8 text-center space-y-3 group hover:bg-gray-50 transition-colors">
           <div className="w-12 h-12 bg-brand-teal/10 text-brand-teal rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
             <ShieldCheck size={24} className="text-brand-teal" />
           </div>
           <h3 className="font-bold text-gray-900 text-lg">Why stay here?</h3>
-          <p className="text-gray-600 text-sm">Avoid Nairobi traffic. Early flight? Sleep in. Late arrival? Be home in minutes. <strong className="text-brand-teal">24/7 Security</strong>.</p>
+          <p className="text-gray-600 text-sm">Good for people waiting for a delayed flight, refreshing before or after travel, avoiding a night in Eldoret town for a morning flight, or students saying bye to loved ones. <strong className="text-brand-teal">24/7 Security</strong>.</p>
         </div>
         <div className="p-8 text-center space-y-3 group hover:bg-gray-50 transition-colors rounded-r-xl">
           <div className="w-12 h-12 bg-brand-teal/10 text-brand-teal rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform"
@@ -109,6 +137,8 @@ export default function Home() {
       </section>
 
       <AccommodationSection onOpenBooking={handleOpenBooking} />
+
+      <RestaurantSection />
 
       <AmenitiesSection />
 

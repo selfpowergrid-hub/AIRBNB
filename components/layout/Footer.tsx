@@ -18,8 +18,8 @@ const Footer = () => {
                             </div>
                         </Link>
                         <p className="text-gray-400 max-w-sm">
-                            Experience the ultimate convenience just 600m from Eldoret International Airport.
-                            Modern studios, executive villas, and secure parking for the discerning traveler.
+                            Experience the ultimate convenience just 3 mins from Eldoret International Airport, 100 meters off tarmac.
+                            Very nice, sizeable and clean rooms, executive villas, and secure parking for the discerning traveler.
                         </p>
                     </div>
 
@@ -29,7 +29,8 @@ const Footer = () => {
                         <ul className="space-y-2">
                             <li><Link href="#home" className="text-gray-300 hover:text-brand-teal transition-colors">Home</Link></li>
                             <li><Link href="#accommodation" className="text-gray-300 hover:text-brand-teal transition-colors">Accommodation</Link></li>
-                            <li><Link href="#park-fly" className="text-gray-300 hover:text-brand-teal transition-colors">Park & Fly</Link></li>
+                            <li><Link href="#lounge" className="text-gray-300 hover:text-brand-teal transition-colors">Lounge Area</Link></li>
+                            <li><Link href="#park-fly" className="text-gray-300 hover:text-brand-teal transition-colors">Secure Parking</Link></li>
                             <li><Link href="#contact" className="text-gray-300 hover:text-brand-teal transition-colors">Contact Us</Link></li>
                         </ul>
                     </div>
@@ -40,7 +41,7 @@ const Footer = () => {
                         <ul className="space-y-4">
                             <li className="flex items-start gap-3">
                                 <MapPin className="text-brand-teal flex-shrink-0" size={20} />
-                                <span className="text-gray-300">600m from Eldoret International Airport (Departure Gate)</span>
+                                <span className="text-gray-300">3 mins from Eldoret Int. Airport, 100m off tarmac</span>
                             </li>
                             <li className="flex items-center gap-3">
                                 <a href="tel:0757717616" className="text-gray-300 hover:text-brand-teal transition-colors">0757717616</a>

@@ -13,7 +13,7 @@ const ParkAndFlySection = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <div className="space-y-8">
                         <div className="inline-block bg-brand-teal/20 text-brand-teal px-4 py-1.5 rounded-full font-semibold border border-brand-teal/30">
-                            The "Park-and-Fly" Hub
+                            Ample & Secure Parking
                         </div>
 
                         <h2 className="text-4xl md:text-5xl font-extrabold leading-tight">
@@ -22,7 +22,7 @@ const ParkAndFlySection = () => {
                         </h2>
 
                         <p className="text-gray-400 text-lg">
-                            Don't leave your car unsecured. Enjoy our "ample packing space" with 24/7 manned security, CCTV surveillance, and dedicated spots for transit travelers.
+                            Enjoy peace of mind with our ample and secure parking space available for all visiting guests. For our staying guests who fly out, you can safely leave your vehicle with us, knowing it will be secure until you return for your accommodation.
                         </p>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
@@ -36,14 +36,14 @@ const ParkAndFlySection = () => {
                             <div className="flex items-start gap-4 p-4 bg-white/5 rounded-xl border border-white/10">
                                 <Clock className="text-brand-teal shrink-0" size={32} />
                                 <div>
-                                    <h4 className="font-bold text-lg">Instant Transfer</h4>
-                                    <p className="text-sm text-gray-400">3-minute shuttle or walk to the terminal.</p>
+                                    <h4 className="font-bold text-lg">Travel & Return</h4>
+                                    <p className="text-sm text-gray-400">Fly out and leave your vehicle safely. Perfect for guests returning for a stay.</p>
                                 </div>
                             </div>
                         </div>
 
                         <button className="bg-brand-teal hover:bg-teal-600 text-white px-8 py-4 rounded-full font-bold transition-all shadow-lg hover:shadow-brand-teal/50">
-                            Reserve Parking Slot
+                            Inquire About Parking
                         </button>
                     </div>
 
