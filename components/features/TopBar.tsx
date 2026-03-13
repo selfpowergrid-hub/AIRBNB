@@ -9,7 +9,7 @@ const TopBar = () => {
         <div className="bg-brand-teal text-white py-2 text-xs font-medium relative z-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
                 <div className="hidden sm:flex items-center gap-4">
-                    <a href="mailto:book@porthill.co.ke" className="hover:text-gray-100 transition-colors">book@porthill.co.ke</a>
+                    <a href="mailto:porthillguest027@gmail.com" className="hover:text-gray-100 transition-colors">porthillguest027@gmail.com</a>
                     <span>|</span>
                     <a href="tel:0757717616" className="hover:text-gray-100 transition-colors">0757717616</a>
                     <span>|</span>
