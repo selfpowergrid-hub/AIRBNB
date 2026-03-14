@@ -27,6 +27,11 @@ export default function Home() {
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
+  // Ensure page starts at the top on load
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, []);
+
   const heroImages = [
     "/assets/Hero/DSC_2681.jpg",
     "/assets/Hero/DSC_2695.jpg",
