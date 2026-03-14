@@ -359,8 +359,10 @@ const BookingModal = ({ isOpen, onClose, initialRoomId }: BookingModalProps) => 
                     modifiers={{ booked: isBooked }}
                     modifiersClassNames={{ booked: 'booked-date' }}
                     components={{
-                        IconLeft: () => <ChevronLeft className="h-4 w-4" />,
-                        IconRight: () => <ChevronRight className="h-4 w-4" />
+                        Chevron: ({ orientation }) => {
+                            const Icon = orientation === 'left' ? ChevronLeft : ChevronRight;
+                            return <Icon className="h-4 w-4" />;
+                        }
                     }}
                 />
             </div>
