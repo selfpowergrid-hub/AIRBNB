@@ -17,7 +17,7 @@ const BookingModal = dynamic(() => import("@/components/features/BookingModal"),
   ssr: false,
 });
 
-const AIAssistantWidget = dynamic(() => import("@/components/features/AIAssistantWidget"), {
+const WhatsAppWidget = dynamic(() => import("@/components/features/WhatsAppWidget"), {
   ssr: false,
 });
 
@@ -51,7 +51,7 @@ export default function Home() {
 
   return (
     <>
-      <AIAssistantWidget />
+      <WhatsAppWidget />
       <BookingModal
         isOpen={isBookingOpen}
         onClose={() => setIsBookingOpen(false)}

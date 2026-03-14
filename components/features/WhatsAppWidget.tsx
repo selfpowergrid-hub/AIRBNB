@@ -1,14 +1,20 @@
 
+'use client';
+
 import React from 'react';
 import { MessageCircle } from 'lucide-react';
 
 const WhatsAppWidget = () => {
+    const message = encodeURIComponent(
+        "Hi Port Hill! 👋 I'm visiting your website and would love to know more about your rooms and availability."
+    );
+
     return (
         <a
-            href="https://wa.me/254757717616"
+            href={`https://wa.me/254757717616?text=${message}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="fixed bottom-6 right-6 z-50 bg-[#25D366] hover:bg-[#20bd5a] text-white p-4 rounded-full shadow-2xl transition-all hover:scale-110 flex items-center justify-center animate-bounce-slow group"
+            className="fixed bottom-6 right-6 z-50 bg-[#25D366] hover:bg-[#20bd5a] text-white p-4 rounded-full shadow-2xl transition-all hover:scale-110 flex items-center justify-center group"
             aria-label="Chat on WhatsApp"
         >
             <MessageCircle size={32} fill="white" className="text-white" />
