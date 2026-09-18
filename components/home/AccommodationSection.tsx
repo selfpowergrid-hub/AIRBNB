@@ -121,8 +121,7 @@ const AccommodationSection = ({ onOpenBooking }: Props) => {
                                 <li className="flex gap-3 text-gray-700 items-start">
                                     <Coffee size={18} className="text-brand-teal mt-1 flex-shrink-0" />
                                     <div>
-                                        <p className="font-semibold text-brand-dark">Overnight Stay: KES 2,500</p>
-                                        <p className="text-sm text-gray-500">Includes breakfast</p>
+                                        <p className="font-semibold text-brand-dark">Overnight Stay: KES 1,500</p>
                                     </div>
                                 </li>
                                 <li className="flex gap-3 text-gray-700 items-start">
@@ -180,7 +179,7 @@ const AccommodationSection = ({ onOpenBooking }: Props) => {
                             <div className="flex justify-between items-start mb-4">
                                 <div>
                                     <h3 className="text-2xl font-bold text-gray-900 mb-1">Executive Airbnb</h3>
-                                    <p className="text-gray-500">4-Bedroom Residential Unit</p>
+                                    <p className="text-gray-500">5-Bedroom Residential Unit</p>
                                 </div>
                                 <div className="bg-gray-100 p-2 rounded-lg">
                                     <Users size={24} className="text-brand-dark" />
@@ -188,8 +187,18 @@ const AccommodationSection = ({ onOpenBooking }: Props) => {
                             </div>
 
                             <ul className="space-y-3 mb-8">
-                                <li className="flex items-center gap-3 text-gray-700">
-                                    <Users size={18} className="text-brand-teal" /> Exact Pricing: <strong className="ml-1 text-brand-dark">KES 6,000 / Night</strong>
+                                <li className="flex gap-3 text-gray-700 items-start">
+                                    <Users size={18} className="text-brand-teal mt-1 flex-shrink-0" />
+                                    <div className="w-full">
+                                        <p className="font-semibold text-brand-dark mb-2">Book by the Bedroom <span className="font-normal text-gray-500">(per night)</span></p>
+                                        <ul className="space-y-1 text-sm">
+                                            <li className="flex justify-between border-b border-gray-100 pb-1"><span>1 Bedroom</span><span className="font-semibold text-brand-dark">KES 2,500</span></li>
+                                            <li className="flex justify-between border-b border-gray-100 pb-1"><span>2 Bedrooms</span><span className="font-semibold text-brand-dark">KES 3,500</span></li>
+                                            <li className="flex justify-between border-b border-gray-100 pb-1"><span>3 Bedrooms</span><span className="font-semibold text-brand-dark">KES 4,500</span></li>
+                                            <li className="flex justify-between border-b border-gray-100 pb-1"><span>4 Bedrooms</span><span className="font-semibold text-brand-dark">KES 6,000</span></li>
+                                            <li className="flex justify-between"><span>5 Bedrooms <span className="text-gray-400">(whole villa)</span></span><span className="font-semibold text-brand-dark">KES 7,500</span></li>
+                                        </ul>
+                                    </div>
                                 </li>
                                 <li className="flex items-center gap-3 text-gray-700">
                                     <Shield size={18} className="text-brand-teal" /> Private Compound & Security

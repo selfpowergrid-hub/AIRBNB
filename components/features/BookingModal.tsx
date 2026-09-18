@@ -2,12 +2,63 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Calendar as CalendarIcon, Search, CheckCircle2, Loader2, ArrowRight, MoreVertical, ShieldCheck, Trash2, XCircle, Users, Minus, Plus, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
-import { DayPicker, DateRange } from 'react-day-picker';
+import { X, Calendar as CalendarIcon, CheckCircle2, Loader2, XCircle, Minus, Plus, ChevronLeft, ChevronRight, Copy, AlertCircle, Check, MessageCircle } from 'lucide-react';
+import { DayPicker } from 'react-day-picker';
 import { format, isAfter, isBefore, isSameDay, addDays, parseISO, startOfDay, differenceInDays } from 'date-fns';
 import { supabase } from '@/lib/supabase';
+import {
+    STUDIO, VILLA, STUDIO_FROM, VILLA_FROM, FALLBACK_ADDONS,
+    studioRate, villaRate, accommodationTotal,
+    type RoomType, type StayType,
+} from '@/lib/pricing';
 import 'react-day-picker/dist/style.css';
 
+
+const TILL_NUMBER = '6817904';
+const TILL_NAME = 'PORT HILL GUEST AND ACC.';
+const SUPPORT_PHONE = '0757717616';
+const ALERT_WHATSAPP = '254757717616';
+
+const LABEL = 'text-[10px] font-semibold text-gray-500 uppercase tracking-[0.16em]';
+const SECTION_H = 'flex items-center gap-2 text-[13px] font-bold text-brand-dark tracking-tight';
+const SECTION_N = 'w-5 h-5 rounded-full bg-checkout-green/10 text-checkout-green text-[10px] font-bold flex items-center justify-center flex-shrink-0';
+
+const CARD_BASE = 'w-full text-left p-3 rounded-xl border-2 transition-all duration-200';
+const CARD_ON = CARD_BASE + ' border-checkout-green bg-checkout-green-soft ring-1 ring-checkout-green/20';
+const CARD_OFF = CARD_BASE + ' border-gray-200 bg-white hover:border-checkout-green/40 hover:bg-checkout-green-soft/40';
+
+const DOT_ON = 'w-4 h-4 rounded bg-checkout-green text-white flex items-center justify-center flex-shrink-0';
+const DOT_OFF = 'w-4 h-4 rounded border-2 border-gray-300 flex-shrink-0';
+
+const SEG_BASE = 'py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all';
+const SEG_ON = SEG_BASE + ' bg-white text-checkout-green shadow-sm ring-1 ring-checkout-green/15';
+const SEG_OFF = SEG_BASE + ' text-gray-500 hover:text-brand-dark';
+
+const BED_BASE = 'py-2 rounded-lg border-2 transition-all duration-200 text-center';
+const BED_ON = BED_BASE + ' border-checkout-green bg-checkout-green text-white';
+const BED_OFF = BED_BASE + ' border-gray-200 bg-white text-brand-dark hover:border-checkout-green/40 hover:bg-checkout-green-soft/40';
+
+const EXTRA_BASE = 'w-full flex items-center justify-between px-3 py-2 rounded-lg border-2 transition-all';
+const EXTRA_ON = EXTRA_BASE + ' border-checkout-green bg-checkout-green-soft';
+const EXTRA_OFF = EXTRA_BASE + ' border-gray-200 bg-white hover:border-checkout-green/40 hover:bg-checkout-green-soft/40';
+
+const FIELD_BASE = 'px-3 py-2 rounded-lg border transition-colors cursor-pointer';
+const FIELD_ON = FIELD_BASE + ' bg-checkout-green-soft border-checkout-green';
+const FIELD_OFF = FIELD_BASE + ' border-transparent hover:bg-gray-50 hover:border-gray-200';
+
+const STEP_BTN = 'w-7 h-7 rounded-full border border-gray-200 bg-white flex items-center justify-center hover:border-checkout-green hover:text-checkout-green text-brand-dark transition-colors disabled:opacity-30 disabled:hover:border-gray-200 disabled:hover:text-brand-dark';
+
+const INPUT_BASE = 'w-full px-3 py-2 bg-gray-50 border rounded-lg outline-none transition-all font-bold text-brand-dark focus:bg-white text-sm';
+const INPUT = INPUT_BASE + ' border-gray-200 focus:border-checkout-green focus:ring-2 focus:ring-checkout-green/15';
+const INPUT_BAD = INPUT_BASE + ' border-red-300 focus:border-red-400';
+
+// Short, human-readable reference the guest can quote on the phone.
+// Kept unique at the database level by a unique index on booking_ref.
+function makeBookingRef(): string {
+    const stamp = Date.now().toString(36).toUpperCase().slice(-5);
+    const salt = Math.floor(Math.random() * 36).toString(36).toUpperCase();
+    return 'PH-' + stamp + salt;
+}
 
 interface Room {
     id: string;
@@ -15,6 +66,14 @@ interface Room {
     price_per_night: number;
     max_guests: number;
     amenities?: string[];
+}
+
+interface Addon {
+    id: string;
+    name: string;
+    price: number;
+    category: string;
+    sort_order: number;
 }
 
 interface Booking {
@@ -29,9 +88,11 @@ interface BookingModalProps {
 }
 
 const BookingModal = ({ isOpen, onClose, initialRoomId }: BookingModalProps) => {
-    const [step, setStep] = useState(1);
     const [rooms, setRooms] = useState<Room[]>([]);
-    const [selectedRoom, setSelectedRoom] = useState<string>('');
+    const [roomType, setRoomType] = useState<RoomType>('studio');
+    const [stayType, setStayType] = useState<StayType>('overnight');
+    const [studioUnits, setStudioUnits] = useState(1);
+    const [villaBedrooms, setVillaBedrooms] = useState(1);
 
     // New State for Split Dates
     const [startDate, setStartDate] = useState<Date | undefined>(undefined);
@@ -44,20 +105,24 @@ const BookingModal = ({ isOpen, onClose, initialRoomId }: BookingModalProps) => 
     const [existingBookings, setExistingBookings] = useState<Booking[]>([]);
     const [guestName, setGuestName] = useState('');
     const [guestPhone, setGuestPhone] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
 
-    // Admin State
-    const [adminPassword, setAdminPassword] = useState('');
-    const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
-    const [allBookings, setAllBookings] = useState<any[]>([]);
-    const [adminError, setAdminError] = useState('');
-    const [adminTab, setAdminTab] = useState<'reservations' | 'settings'>('reservations');
-    const [editingRoom, setEditingRoom] = useState<Room | null>(null);
 
     // Popover States
     const [activePopover, setActivePopover] = useState<'start' | 'end' | 'travelers' | null>(null);
     const popoverRef = useRef<HTMLDivElement>(null);
+
+    // Payment / feedback
+    const [addons, setAddons] = useState<Addon[]>([]);
+    const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
+    const [mpesaCode, setMpesaCode] = useState('');
+    const [bookingRef, setBookingRef] = useState('');
+    const [errorMsg, setErrorMsg] = useState('');
+    const [roomsLoading, setRoomsLoading] = useState(false);
+    const [tillCopied, setTillCopied] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [saveWarning, setSaveWarning] = useState('');
+
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -69,116 +134,59 @@ const BookingModal = ({ isOpen, onClose, initialRoomId }: BookingModalProps) => 
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    useEffect(() => {
-        if (isOpen) {
-            fetchRooms();
-        }
-    }, [isOpen]);
-
-    useEffect(() => {
-        if (selectedRoom) {
-            fetchBookings(selectedRoom);
-        }
-    }, [selectedRoom]);
-
     const fetchRooms = async () => {
+        setRoomsLoading(true);
+        setErrorMsg('');
         const { data, error } = await supabase.from('rooms').select('*');
+        setRoomsLoading(false);
+        if (error) {
+            setErrorMsg(`We could not load room availability. Please refresh the page, or call ${SUPPORT_PHONE} and we will book you in directly.`);
+            return;
+        }
         if (data) {
             setRooms(data);
+            // Deep links from the accommodation cards preselect the right type.
             if (initialRoomId) {
-                setSelectedRoom(initialRoomId);
-            } else if (data.length > 0) {
-                setSelectedRoom(data[0].id);
+                const target = data.find(r => r.id === initialRoomId);
+                if (target) setRoomType(/studio/i.test(target.name) ? 'studio' : 'villa');
             }
         }
     };
 
+    // Extras are a nice-to-have: if they fail to load the guest can still book.
+    const fetchAddons = async () => {
+        const { data, error } = await supabase
+            .from('addons')
+            .select('*')
+            .eq('is_active', true)
+            .order('sort_order', { ascending: true });
+        if (error || !data || data.length === 0) {
+            setAddons(FALLBACK_ADDONS as Addon[]);
+            return;
+        }
+        setAddons(data);
+    };
+
     const fetchBookings = async (roomId: string) => {
         setExistingBookings([]);
+        // Reads the availability view, not the bookings table: the calendar only
+        // needs which dates are taken, never guest names or phone numbers.
         const { data, error } = await supabase
-            .from('bookings')
+            .from('public_availability')
             .select('check_in, check_out')
-            .eq('room_id', roomId)
-            .neq('status', 'cancelled');
+            .eq('room_id', roomId);
+        if (error) {
+            setErrorMsg('We could not check which dates are already taken. Please refresh before booking.');
+            return;
+        }
         if (data) setExistingBookings(data);
     };
 
-    const fetchAllBookings = async () => {
-        setIsLoading(true);
-        const { data, error } = await supabase
-            .from('bookings')
-            .select('*, rooms(name)')
-            .order('created_at', { ascending: false });
-        if (data) setAllBookings(data);
-        setIsLoading(false);
-    };
 
-    const handleCancelBooking = async (id: string) => {
-        if (!confirm('Cancel this booking and free up dates?')) return;
-        const { error } = await supabase
-            .from('bookings')
-            .update({ status: 'cancelled' })
-            .eq('id', id);
-        if (!error) fetchAllBookings();
-    };
 
-    const handleDeleteBooking = async (id: string) => {
-        if (!confirm('PERMANENTLY DELETE this record? This cannot be undone.')) return;
-        const { error } = await supabase
-            .from('bookings')
-            .delete()
-            .eq('id', id);
-        if (!error) fetchAllBookings();
-    };
 
-    const handleAdminLogin = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (adminPassword === 'porthill2024') {
-            setIsAdminAuthenticated(true);
-            setStep(11);
-            setAdminTab('reservations');
-            fetchAllBookings();
-            fetchRooms();
-        } else {
-            setAdminError('Invalid Key');
-            setTimeout(() => setAdminError(''), 2000);
-        }
-    };
 
-    const handleUpdateRoom = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!editingRoom) return;
 
-        setIsLoading(true);
-        const { error } = await supabase
-            .from('rooms')
-            .update({
-                name: editingRoom.name,
-                price_per_night: editingRoom.price_per_night,
-                amenities: editingRoom.amenities
-            })
-            .eq('id', editingRoom.id);
-
-        if (!error) {
-            setEditingRoom(null);
-            fetchRooms();
-        }
-        setIsLoading(false);
-    };
-
-    const toggleAmenity = (room: Room, amenity: string) => {
-        const currentAmenities = room.amenities || [];
-        const newAmenities = currentAmenities.includes(amenity)
-            ? currentAmenities.filter(a => a !== amenity)
-            : [...currentAmenities, amenity];
-
-        setEditingRoom({ ...room, amenities: newAmenities });
-    };
-
-    const PREDEFINED_AMENITIES = [
-        'King Bed', 'En-suite', 'Kitchenette', 'Wi-Fi', 'Security',
-        'Airport Transfer', 'Parking', 'Smart TV', 'Air Con', 'Hot Shower'
-    ];
 
     const isDateDisabled = (date: Date) => {
         const d = startOfDay(date);
@@ -204,46 +212,275 @@ const BookingModal = ({ isOpen, onClose, initialRoomId }: BookingModalProps) => 
         });
     };
 
-    const isRangeInvalid = startDate && endDate && (() => {
+    // The rooms table supplies identity and availability only; rates come from
+    // lib/pricing, because a single price column cannot hold the bedroom ladder.
+    const activeRoom = rooms.find(r =>
+        roomType === 'studio' ? /studio/i.test(r.name) : /villa|executive|airbnb/i.test(r.name)
+    );
+    const selectedRoom = activeRoom ? activeRoom.id : '';
+
+    const isDayRoom = roomType === 'studio' && stayType === 'day';
+    // A day room occupies its date, so it books as a single night internally.
+    const effectiveEnd = isDayRoom && startDate ? addDays(startDate, 1) : endDate;
+    const nights = startDate && effectiveEnd
+        ? Math.max(1, differenceInDays(startOfDay(effectiveEnd), startOfDay(startDate)))
+        : 0;
+    const datesChosen = isDayRoom ? !!startDate : !!(startDate && endDate);
+
+    const isRangeInvalid = !!(startDate && effectiveEnd) && (() => {
         let current = startOfDay(startDate);
-        const end = startOfDay(endDate);
+        const end = startOfDay(effectiveEnd);
         while (current <= end) {
             if (isBooked(current)) return true;
             current = addDays(current, 1);
         }
         return false;
     })();
+    const selectedAddonItems = addons.filter(a => selectedAddons.includes(a.id));
+    // Bonfire extras are a one-off charge for the stay, not multiplied by nights.
+    const addonsTotal = selectedAddonItems.reduce((sum, a) => sum + Number(a.price || 0), 0);
+    const roomTotal = datesChosen
+        ? accommodationTotal({ roomType, stayType, studioUnits, villaBedrooms, nights })
+        : 0;
+    const totalAmount = roomTotal + addonsTotal;
 
-    const handleBooking = async () => {
-        if (!startDate || !endDate || !guestName || !guestPhone) return;
+    const stayLabel = roomType === 'studio'
+        ? studioUnits + (studioUnits === 1 ? ' studio' : ' studios') + (isDayRoom ? ', day room' : '')
+        : villaBedrooms + (villaBedrooms === 1 ? ' bedroom' : ' bedrooms');
 
-        setIsLoading(true);
+    const toggleAddon = (id: string) => {
+        setSelectedAddons(prev => prev.includes(id) ? prev.filter(x => x !== id) : prev.concat(id));
+    };
+
+    const whatsappHandoffUrl = 'https://wa.me/' + ALERT_WHATSAPP + '?text=' + encodeURIComponent(
+        'Hello Port Hill, I have just booked online. Reference ' + bookingRef +
+        '. Name: ' + guestName +
+        '. M-Pesa code: ' + mpesaCode.trim().toUpperCase() +
+        '. Total: KES ' + totalAmount.toLocaleString() + '.'
+    );
+
+    const normalisedPhone = guestPhone.replace(/[\s-]/g, '');
+    const phoneValid = /^(?:\+?254|0)(7|1)\d{8}$/.test(normalisedPhone);
+    const mpesaCodeValid = /^[A-Z0-9]{8,12}$/.test(mpesaCode.trim().toUpperCase());
+
+    // Deferred to a microtask: these fetchers set state on their first line, and
+    // doing that synchronously inside an effect cascades an extra render.
+    useEffect(() => {
+        if (!isOpen) return;
+        let cancelled = false;
+        void Promise.resolve().then(() => {
+            if (cancelled) return;
+            fetchRooms();
+            fetchAddons();
+        });
+        return () => { cancelled = true; };
+    }, [isOpen]);
+
+    useEffect(() => {
+        if (!selectedRoom) return;
+        let cancelled = false;
+        void Promise.resolve().then(() => {
+            if (!cancelled) fetchBookings(selectedRoom);
+        });
+        return () => { cancelled = true; };
+    }, [selectedRoom]);
+
+    const handleCopyTill = async () => {
+        try {
+            await navigator.clipboard.writeText(TILL_NUMBER);
+            setTillCopied(true);
+            setTimeout(() => setTillCopied(false), 2000);
+        } catch {
+            // Clipboard blocked (insecure origin or denied) - the number is on screen anyway.
+        }
+    };
+
+    const rateLine = roomType === 'studio'
+        ? 'KES ' + studioRate(stayType).toLocaleString() +
+          ' x ' + studioUnits + (studioUnits === 1 ? ' studio' : ' studios') +
+          (isDayRoom ? ' (day)' : ' x ' + nights + (nights === 1 ? ' night' : ' nights'))
+        : 'KES ' + villaRate(villaBedrooms).toLocaleString() +
+          ' x ' + nights + (nights === 1 ? ' night' : ' nights');
+
+    const canBook = datesChosen && !isRangeInvalid && !!selectedRoom &&
+        !!guestName.trim() && phoneValid &&
+        !(mpesaCode.trim() && !mpesaCodeValid);
+
+    const paySteps = [
+        'Open M-Pesa on your phone',
+        'Select Lipa na M-Pesa',
+        'Select Buy Goods and Services',
+        'Enter Till Number ' + TILL_NUMBER,
+        'Enter amount KES ' + totalAmount.toLocaleString(),
+        'Enter your M-Pesa PIN and confirm',
+        'Check the name reads ' + TILL_NAME,
+    ];
+
+    const buildBookingMessage = (ref: string) => {
+        const lines = [
+            'Hello Port Hill, I would like to book.',
+            '',
+            'Reference: ' + ref,
+            'Name: ' + guestName,
+            'Phone: ' + normalisedPhone,
+            'Room: ' + (activeRoom ? activeRoom.name : '-'),
+            'Booking: ' + stayLabel,
+            'Check-in: ' + (startDate ? format(startDate, 'EEE dd MMM yyyy') : '-'),
+        ];
+        if (isDayRoom) {
+            lines.push('Day room (same day)');
+        } else {
+            lines.push('Check-out: ' + (effectiveEnd ? format(effectiveEnd, 'EEE dd MMM yyyy') : '-'));
+            lines.push('Nights: ' + nights);
+        }
+        lines.push('Guests: ' + adults + ' adults, ' + children + ' children');
+        if (selectedAddonItems.length > 0) {
+            lines.push('Extras: ' + selectedAddonItems.map(a => a.name).join(', ') +
+                ' (KES ' + addonsTotal.toLocaleString() + ')');
+        }
+        lines.push('Total: KES ' + totalAmount.toLocaleString());
+        if (mpesaCode.trim()) {
+            lines.push('M-Pesa code: ' + mpesaCode.trim().toUpperCase());
+        } else {
+            lines.push('I will pay to Till ' + TILL_NUMBER + '.');
+        }
+        return lines.join('\n');
+    };
+
+    type SaveResult = { ok: true } | { ok: false; blocking: boolean; message: string };
+
+    // Writes the reservation FIRST, so the database exclusion constraint gets the
+    // final say on whether these dates are still free. Only once this succeeds is
+    // the guest shown a confirmation.
+    const saveReservation = async (ref: string): Promise<SaveResult> => {
+        if (!startDate || !effectiveEnd) {
+            return { ok: false, blocking: true, message: 'Please choose your dates first.' };
+        }
+
+        const code = mpesaCode.trim().toUpperCase();
         const { error } = await supabase.from('bookings').insert({
             room_id: selectedRoom,
             check_in: format(startDate, 'yyyy-MM-dd'),
-            check_out: format(endDate, 'yyyy-MM-dd'),
+            check_out: format(effectiveEnd, 'yyyy-MM-dd'),
             guest_name: guestName,
-            guest_phone: guestPhone,
+            guest_phone: normalisedPhone,
             adults: adults,
             children: children,
+            nights: nights,
+            total_amount: totalAmount,
+            // Left null when absent: the unique index would otherwise collide
+            // on empty strings across every unpaid booking.
+            mpesa_code: code ? code : null,
+            addon_items: selectedAddonItems.map(a => ({ id: a.id, name: a.name, price: Number(a.price) })),
+            addons_total: addonsTotal,
+            payment_status: code ? 'awaiting_verification' : 'awaiting_payment',
+            booking_ref: ref,
             status: 'pending'
         });
 
-        setIsLoading(false);
         if (!error) {
-            setIsSuccess(true);
-            setTimeout(() => {
-                onClose();
-                setIsSuccess(false);
-                setStep(1);
-                setStartDate(undefined);
-                setEndDate(undefined);
-                setAdults(2);
-                setChildren(0);
-                setGuestName('');
-                setGuestPhone('');
-            }, 3000);
+            fetch('/api/notify-booking', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    bookingRef: ref,
+                    guestName: guestName,
+                    guestPhone: normalisedPhone,
+                    roomName: activeRoom ? activeRoom.name : '',
+                    checkIn: format(startDate, 'yyyy-MM-dd'),
+                    checkOut: format(effectiveEnd, 'yyyy-MM-dd'),
+                    nights: nights,
+                    guests: adults + ' adults, ' + children + ' children',
+                    addons: selectedAddonItems.map(a => a.name).join(', '),
+                    total: totalAmount,
+                    mpesaCode: code,
+                }),
+            }).catch(() => { /* alerting is best effort */ });
+            return { ok: true };
         }
+
+        // 23P01 = the dates overlap a live booking. 23505 = that M-Pesa code is
+        // already on another booking. Both are definitive, so the guest must not
+        // be told the reservation succeeded.
+        if (error.code === '23P01') {
+            void fetchBookings(selectedRoom);
+            return {
+                ok: false,
+                blocking: true,
+                message: 'Sorry - those dates were just taken by another guest. Please choose different dates.',
+            };
+        }
+        if (error.code === '23505') {
+            return {
+                ok: false,
+                blocking: true,
+                message: 'That M-Pesa code is already on another booking. Please check your confirmation SMS.',
+            };
+        }
+
+        // Anything else (database unreachable, for instance) is not proof the
+        // dates are gone. Let the WhatsApp message through so the booking still
+        // reaches the property, but say plainly that it is unconfirmed.
+        console.warn('[booking] reservation row not saved: ' + error.message);
+        return {
+            ok: false,
+            blocking: false,
+            message: 'We could not record your reservation automatically, so it is not confirmed yet. Please send the WhatsApp message and we will confirm it by hand.',
+        };
+    };
+
+    const handleBooking = async () => {
+        if (!canBook || isSaving) return;
+
+        setErrorMsg('');
+        setSaveWarning('');
+        setIsSaving(true);
+
+        // The popup has to be created inside the click, before any await, or the
+        // browser treats it as an unsolicited popup and blocks it. It waits on
+        // about:blank and is only pointed at WhatsApp once the dates are secured.
+        const popup = window.open('', '_blank');
+
+        const ref = makeBookingRef();
+        const result = await saveReservation(ref);
+        setIsSaving(false);
+
+        if (!result.ok && result.blocking) {
+            if (popup) popup.close();
+            setErrorMsg(result.message);
+            return;
+        }
+        if (!result.ok) {
+            setSaveWarning(result.message);
+        }
+
+        const url = 'https://wa.me/' + ALERT_WHATSAPP + '?text=' + encodeURIComponent(buildBookingMessage(ref));
+        if (popup) {
+            // Drop the handle back to this page before navigating away.
+            popup.opener = null;
+            popup.location.replace(url);
+        } else {
+            window.open(url, '_blank', 'noopener,noreferrer');
+        }
+
+        setBookingRef(ref);
+        setIsSuccess(true);
+
+        setTimeout(() => {
+            onClose();
+            setIsSuccess(false);
+            setStartDate(undefined);
+            setEndDate(undefined);
+            setAdults(2);
+            setChildren(0);
+            setGuestName('');
+            setGuestPhone('');
+            setMpesaCode('');
+            setSelectedAddons([]);
+            setBookingRef('');
+            setErrorMsg('');
+            setSaveWarning('');
+        }, 15000);
     };
 
     // Helper for rendering calendar popover
@@ -254,7 +491,7 @@ const BookingModal = ({ isOpen, onClose, initialRoomId }: BookingModalProps) => 
         >
             {/* Calendar Header */}
             <div className="bg-gray-50 px-6 py-3 border-b border-gray-100 flex items-center justify-between">
-                <span className="flex-1 text-center text-xs font-black text-gray-900 uppercase tracking-widest ml-6">
+                <span className="flex-1 text-center text-xs font-bold text-gray-900 uppercase tracking-widest ml-6">
                     {type === 'start' ? 'Start Date' : 'End Date'}
                 </span>
                 <button
@@ -262,7 +499,7 @@ const BookingModal = ({ isOpen, onClose, initialRoomId }: BookingModalProps) => 
                         e.stopPropagation();
                         setActivePopover(null);
                     }}
-                    className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors text-gray-400"
+                    className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors text-gray-500"
                 >
                     <X size={16} />
                 </button>
@@ -372,477 +609,388 @@ const BookingModal = ({ isOpen, onClose, initialRoomId }: BookingModalProps) => 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-brand-dark/80 backdrop-blur-xl animate-in fade-in duration-700 overflow-y-auto">
-            <div className={`bg-white/95 backdrop-blur-sm rounded-[3rem] w-full ${step === 1 ? 'max-w-5xl' : 'max-w-2xl'} shadow-[0_35px_80px_-15px_rgba(0,0,0,0.5)] overflow-visible animate-in zoom-in-95 duration-500 relative my-8 border border-white/40 transition-all`}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-brand-dark/80 backdrop-blur-xl animate-in fade-in duration-700">
+            <div className="bg-white rounded-2xl w-full max-w-5xl max-h-[94vh] flex flex-col shadow-[0_35px_80px_-15px_rgba(0,0,0,0.5)] animate-in zoom-in-95 duration-300 relative border border-white/40 overflow-hidden">
 
                 {/* Header */}
-                <div className="px-8 py-6 flex justify-between items-center border-b border-gray-100/50">
-                    <h3 className="font-black text-2xl text-brand-dark tracking-tighter">
-                        {isSuccess ? 'Confirmed!' : step === 1 ? 'Book Your Stay' : 'Guest Details'}
+                <div className="px-5 sm:px-6 py-3.5 flex justify-between items-center border-b border-gray-100 flex-shrink-0">
+                    <h3 className="font-bold text-lg text-brand-dark tracking-tight">
+                        {isSuccess ? 'Reservation Received' : 'Book Your Stay'}
                     </h3>
-                    <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                        <X size={20} className="text-gray-600 hover:text-brand-dark" />
+                    <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-full transition-colors">
+                        <X size={18} className="text-gray-500 hover:text-brand-dark" />
                     </button>
                 </div>
 
-                <div className="p-8">
+                <div className="flex-1 min-h-0 flex flex-col">
                     {isSuccess ? (
-                        <div className="flex flex-col items-center justify-center py-16 text-center animate-in fade-in zoom-in duration-700">
+                        <div className="flex-1 overflow-y-auto flex flex-col items-center justify-center py-10 px-6 text-center animate-in fade-in zoom-in duration-500">
                             <div className="relative">
-                                <div className="absolute inset-0 bg-green-400/20 blur-3xl rounded-full scale-150 animate-pulse" />
-                                <div className="relative w-28 h-28 bg-gradient-to-br from-green-400 to-green-600 text-white rounded-[2rem] flex items-center justify-center mb-10 shadow-2xl shadow-green-500/30 transform rotate-3">
-                                    <CheckCircle2 size={64} className="stroke-[3px]" />
+                                <div className="absolute inset-0 bg-checkout-green/20 blur-3xl rounded-full scale-150 animate-pulse" />
+                                <div className="relative w-20 h-20 bg-gradient-to-br from-checkout-green to-checkout-green-dark text-white rounded-3xl flex items-center justify-center mb-6 shadow-xl shadow-checkout-green/30 transform rotate-3">
+                                    <CheckCircle2 size={44} className="stroke-[3px]" />
                                 </div>
                             </div>
-                            <h2 className="text-4xl font-black text-brand-dark mb-4 tracking-tighter">Reservation Sent!</h2>
+                            <h2 className="text-2xl font-bold text-brand-dark mb-3 tracking-tight">Reservation Received</h2>
                             <p className="text-gray-600 max-w-sm mx-auto text-lg leading-relaxed font-medium">
-                                We've successfully received your booking request for <span className="text-brand-dark font-black underline decoration-brand-teal/50 decoration-4 underline-offset-4">{guestName}</span>.
+                                Thank you <span className="text-brand-dark font-bold underline decoration-checkout-green/50 decoration-4 underline-offset-4">{guestName}</span>. Send the WhatsApp message we opened and we will confirm your booking right away.
                             </p>
+                            {saveWarning && (
+                                <div className="mt-6 max-w-sm bg-amber-50 text-amber-900 px-5 py-4 rounded-2xl border border-amber-200 flex items-start gap-2.5 text-left">
+                                    <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
+                                    <span className="text-sm font-semibold">{saveWarning}</span>
+                                </div>
+                            )}
+                            {bookingRef && (
+                                <div className="mt-8 bg-gray-50 border border-gray-100 rounded-3xl px-10 py-5">
+                                    <span className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Your Reference</span>
+                                    <span className="text-2xl font-bold tracking-widest text-brand-dark">{bookingRef}</span>
+                                </div>
+                            )}
+                            <p className="text-sm text-gray-500 font-medium mt-6 max-w-sm">
+                                Please keep this reference. Any questions, call <strong className="text-brand-dark">{SUPPORT_PHONE}</strong>.
+                            </p>
+                            <a
+                                href={whatsappHandoffUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="mt-6 inline-flex items-center gap-2 bg-checkout-green text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-checkout-green-dark transition-all shadow-lg shadow-checkout-green/25"
+                            >
+                                <MessageCircle size={18} />
+                                Open WhatsApp again
+                            </a>
                         </div>
-                    ) : step === 1 ? (
-                        <div className="space-y-8" ref={popoverRef}>
-                            {/* NEW BOOKING BAR */}
-                            <div className="bg-white rounded-3xl shadow-xl border border-gray-200 p-2 flex flex-col md:flex-row gap-2 relative z-40">
+                    ) : (
+                        <div className="flex-1 min-h-0 overflow-y-auto lg:overflow-hidden flex flex-col lg:flex-row" ref={popoverRef}>
 
-                                {/* 1. Where To */}
-                                <div className="flex-1 relative group">
-                                    <div className="h-full px-6 py-3 rounded-2xl hover:bg-gray-50 transition-colors cursor-pointer border border-transparent hover:border-gray-200">
-                                        <label className="text-[10px] font-black text-gray-900 uppercase tracking-wider block mb-1">Type</label>
-                                        <div className="flex items-center justify-between">
-                                            <select
-                                                className="w-full bg-transparent font-black text-brand-dark outline-none appearance-none cursor-pointer text-lg truncate pr-4"
-                                                value={selectedRoom}
-                                                onChange={(e) => setSelectedRoom(e.target.value)}
-                                            >
-                                                {rooms.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-                                            </select>
-                                            <ChevronDown size={16} className="text-gray-600 ml-[-20px] pointer-events-none" />
-                                        </div>
-                                    </div>
-                                </div>
+                            {/* ---------------- LEFT: the form ---------------- */}
+                            <div className="flex-1 min-w-0 lg:overflow-y-auto px-5 sm:px-6 py-5 space-y-5">
 
-                                <div className="w-px bg-gray-100 hidden md:block" />
-
-                                {/* 2. Start Date */}
-                                <div
-                                    className="flex-1 relative"
-                                    onClick={() => setActivePopover(activePopover === 'start' ? null : 'start')}
-                                >
-                                    <div className={`h-full px-6 py-3 rounded-2xl transition-colors cursor-pointer border ${activePopover === 'start' ? 'bg-brand-teal/5 border-brand-teal' : 'hover:bg-gray-50 border-transparent hover:border-gray-200'}`}>
-                                        <label className="text-[10px] font-black text-gray-900 uppercase tracking-wider block mb-1">Check-In</label>
-                                        <div className="flex items-center gap-2">
-                                            <CalendarIcon size={18} className="text-brand-teal" />
-                                            <span className={`font-black text-lg ${startDate ? 'text-brand-dark' : 'text-gray-500'}`}>
-                                                {startDate ? format(startDate, 'MMM dd, yyyy') : 'Select Date'}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    {activePopover === 'start' && <CalendarPopover type="start" />}
-                                </div>
-
-                                <div className="w-px bg-gray-100 hidden md:block" />
-
-                                {/* 3. End Date */}
-                                <div
-                                    className="flex-1 relative"
-                                    onClick={() => setActivePopover(activePopover === 'end' ? null : 'end')}
-                                >
-                                    <div className={`h-full px-6 py-3 rounded-2xl transition-colors cursor-pointer border ${activePopover === 'end' ? 'bg-brand-teal/5 border-brand-teal' : 'hover:bg-gray-50 border-transparent hover:border-gray-200'}`}>
-                                        <label className="text-[10px] font-black text-gray-900 uppercase tracking-wider block mb-1">Check-Out</label>
-                                        <div className="flex items-center gap-2">
-                                            <CalendarIcon size={18} className="text-brand-teal" />
-                                            <span className={`font-black text-lg ${endDate ? 'text-brand-dark' : 'text-gray-500'}`}>
-                                                {endDate ? format(endDate, 'MMM dd, yyyy') : 'Select Date'}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    {activePopover === 'end' && <CalendarPopover type="end" />}
-                                </div>
-
-                                <div className="w-px bg-gray-100 hidden md:block" />
-
-                                {/* 4. Travelers */}
-                                <div className="flex-1 relative">
-                                    <div
-                                        className={`h-full px-6 py-3 rounded-2xl transition-colors cursor-pointer border ${activePopover === 'travelers' ? 'bg-brand-teal/5 border-brand-teal' : 'hover:bg-gray-50 border-transparent hover:border-gray-200'}`}
-                                        onClick={() => setActivePopover(activePopover === 'travelers' ? null : 'travelers')}
-                                    >
-                                        <label className="text-[10px] font-black text-gray-900 uppercase tracking-wider block mb-1">Travelers</label>
-                                        <div className="flex items-center gap-2">
-                                            <Users size={18} className="text-brand-teal" />
-                                            <span className="font-black text-lg text-brand-dark">
-                                                {adults + children} Guests
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    {/* Travelers Popover */}
-                                    {activePopover === 'travelers' && (
-                                        <div className="absolute top-full right-0 mt-2 w-72 bg-white p-6 rounded-3xl shadow-2xl border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
-                                            <div className="space-y-6">
-                                                <div className="flex justify-between items-center">
-                                                    <div>
-                                                        <p className="font-black text-brand-dark">Adults</p>
-                                                        <p className="text-xs text-gray-900 font-black uppercase tracking-tighter opacity-70">Ages 13 or above</p>
-                                                    </div>
-                                                    <div className="flex items-center gap-3">
-                                                        <button
-                                                            onClick={() => setAdults(Math.max(1, adults - 1))}
-                                                            className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 text-brand-dark"
-                                                        >
-                                                            <Minus size={14} />
-                                                        </button>
-                                                        <span className="font-black w-4 text-center">{adults}</span>
-                                                        <button
-                                                            onClick={() => setAdults(adults + 1)}
-                                                            className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 text-brand-dark"
-                                                        >
-                                                            <Plus size={14} />
-                                                        </button>
-                                                    </div>
+                                <section className="space-y-2">
+                                    <h3 className={SECTION_H}><span className={SECTION_N}>1</span> Accommodation</h3>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <button type="button" onClick={() => setRoomType('studio')} className={roomType === 'studio' ? CARD_ON : CARD_OFF}>
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div>
+                                                    <span className="block font-bold text-brand-dark">{STUDIO.label}</span>
+                                                    <span className="block text-xs text-gray-500 font-bold mt-0.5">{STUDIO.blurb}</span>
                                                 </div>
-                                                <div className="w-full h-px bg-gray-100" />
-                                                <div className="flex justify-between items-center">
-                                                    <div>
-                                                        <p className="font-black text-brand-dark">Children</p>
-                                                        <p className="text-xs text-gray-900 font-black uppercase tracking-tighter opacity-70">Ages 0-12</p>
-                                                    </div>
-                                                    <div className="flex items-center gap-3">
-                                                        <button
-                                                            onClick={() => setChildren(Math.max(0, children - 1))}
-                                                            className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 text-brand-dark"
-                                                        >
-                                                            <Minus size={14} />
-                                                        </button>
-                                                        <span className="font-black w-4 text-center">{children}</span>
-                                                        <button
-                                                            onClick={() => setChildren(children + 1)}
-                                                            className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 text-brand-dark"
-                                                        >
-                                                            <Plus size={14} />
-                                                        </button>
-                                                    </div>
+                                                <span className={roomType === 'studio' ? DOT_ON : DOT_OFF}>
+                                                    {roomType === 'studio' && <Check size={12} className="stroke-[4px]" />}
+                                                </span>
+                                            </div>
+                                            <span className="block text-xs font-bold text-checkout-green mt-3">From KES {STUDIO_FROM.toLocaleString()}</span>
+                                        </button>
+
+                                        <button type="button" onClick={() => setRoomType('villa')} className={roomType === 'villa' ? CARD_ON : CARD_OFF}>
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div>
+                                                    <span className="block font-bold text-brand-dark">{VILLA.label}</span>
+                                                    <span className="block text-xs text-gray-500 font-bold mt-0.5">{VILLA.blurb}</span>
                                                 </div>
-                                                <button
-                                                    onClick={() => setActivePopover(null)}
-                                                    className="w-full bg-brand-teal text-white py-3 rounded-xl font-bold text-sm"
-                                                >
-                                                    Done
+                                                <span className={roomType === 'villa' ? DOT_ON : DOT_OFF}>
+                                                    {roomType === 'villa' && <Check size={12} className="stroke-[4px]" />}
+                                                </span>
+                                            </div>
+                                            <span className="block text-xs font-bold text-checkout-green mt-3">From KES {VILLA_FROM.toLocaleString()}</span>
+                                        </button>
+                                    </div>
+                                </section>
+
+                                <section className="space-y-2">
+                                    <h3 className={SECTION_H}><span className={SECTION_N}>2</span> Your stay</h3>
+                                    {roomType === 'studio' ? (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <span className={LABEL}>Stay type</span>
+                                                <div className="grid grid-cols-2 gap-1 p-1 bg-gray-100 rounded-2xl">
+                                                    <button type="button" onClick={() => setStayType('overnight')} className={stayType === 'overnight' ? SEG_ON : SEG_OFF}>Overnight</button>
+                                                    <button type="button" onClick={() => setStayType('day')} className={stayType === 'day' ? SEG_ON : SEG_OFF}>Day room</button>
+                                                </div>
+                                                <p className="text-xs text-gray-500 font-bold">
+                                                    KES {studioRate(stayType).toLocaleString()} per studio{stayType === 'day' ? ' for the day' : ' per night'}
+                                                </p>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <span className={LABEL}>How many studios</span>
+                                                <div className="flex items-center justify-between bg-gray-50 border border-gray-100 rounded-lg px-3 py-1.5">
+                                                    <button type="button" onClick={() => setStudioUnits(Math.max(1, studioUnits - 1))} disabled={studioUnits <= 1} className={STEP_BTN} aria-label="Fewer studios">
+                                                        <Minus size={15} />
+                                                    </button>
+                                                    <span className="font-bold text-xl text-brand-dark tabular-nums">{studioUnits}</span>
+                                                    <button type="button" onClick={() => setStudioUnits(Math.min(STUDIO.totalUnits, studioUnits + 1))} disabled={studioUnits >= STUDIO.totalUnits} className={STEP_BTN} aria-label="More studios">
+                                                        <Plus size={15} />
+                                                    </button>
+                                                </div>
+                                                <p className="text-xs text-gray-500 font-bold">{STUDIO.totalUnits} studios on the property</p>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-2">
+                                            <span className={LABEL}>Bedrooms required</span>
+                                            <div className="grid grid-cols-5 gap-2">
+                                                {Array.from({ length: VILLA.totalBedrooms }, (_, i) => i + 1).map(n => (
+                                                    <button key={n} type="button" onClick={() => setVillaBedrooms(n)} className={villaBedrooms === n ? BED_ON : BED_OFF}>
+                                                        <span className="block text-lg font-bold leading-none">{n}</span>
+                                                        <span className="block text-[9px] font-bold uppercase tracking-wider mt-1.5 opacity-70">{villaRate(n).toLocaleString()}</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            <p className="text-xs text-gray-500 font-bold">
+                                                KES {villaRate(villaBedrooms).toLocaleString()} per night{villaBedrooms === VILLA.totalBedrooms ? ' — the whole villa' : ''}
+                                            </p>
+                                        </div>
+                                    )}
+                                </section>
+
+                                <section className="space-y-2">
+                                    <h3 className={SECTION_H}><span className={SECTION_N}>3</span> {isDayRoom ? 'Date' : 'Dates'}</h3>
+                                    <div className="bg-white rounded-xl border border-gray-200 p-1 flex flex-col sm:flex-row gap-1 relative z-40">
+                                        <div className="flex-1 relative" onClick={() => setActivePopover(activePopover === 'start' ? null : 'start')}>
+                                            <div className={activePopover === 'start' ? FIELD_ON : FIELD_OFF}>
+                                                <span className={LABEL + ' block mb-1'}>{isDayRoom ? 'Date' : 'Check-in'}</span>
+                                                <div className="flex items-center gap-2">
+                                                    <CalendarIcon size={16} className="text-checkout-green flex-shrink-0" />
+                                                    <span className={startDate ? 'font-bold text-brand-dark text-sm' : 'font-bold text-gray-500 text-sm'}>
+                                                        {startDate ? format(startDate, 'dd MMM yyyy') : 'Select'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            {activePopover === 'start' && <CalendarPopover type="start" />}
+                                        </div>
+
+                                        {!isDayRoom && (
+                                            <>
+                                                <div className="w-px bg-gray-100 hidden sm:block" />
+                                                <div className="flex-1 relative" onClick={() => setActivePopover(activePopover === 'end' ? null : 'end')}>
+                                                    <div className={activePopover === 'end' ? FIELD_ON : FIELD_OFF}>
+                                                        <span className={LABEL + ' block mb-1'}>Check-out</span>
+                                                        <div className="flex items-center gap-2">
+                                                            <CalendarIcon size={16} className="text-checkout-green flex-shrink-0" />
+                                                            <span className={endDate ? 'font-bold text-brand-dark text-sm' : 'font-bold text-gray-500 text-sm'}>
+                                                                {endDate ? format(endDate, 'dd MMM yyyy') : 'Select'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    {activePopover === 'end' && <CalendarPopover type="end" />}
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                    {isRangeInvalid && (
+                                        <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl border border-red-100 flex items-center gap-2">
+                                            <XCircle size={16} className="flex-shrink-0" />
+                                            <span className="text-xs font-bold uppercase tracking-widest">Those dates are unavailable</span>
+                                        </div>
+                                    )}
+                                </section>
+
+                                <section className="space-y-2">
+                                    <h3 className={SECTION_H}><span className={SECTION_N}>4</span> Guests</h3>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div className="flex items-center justify-between bg-gray-50 border border-gray-100 rounded-lg px-3 py-2">
+                                            <div>
+                                                <p className="font-bold text-brand-dark text-sm">Adults</p>
+                                                <p className="text-[11px] text-gray-500 font-bold">13 or above</p>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <button type="button" onClick={() => setAdults(Math.max(1, adults - 1))} disabled={adults <= 1} className={STEP_BTN} aria-label="Fewer adults">
+                                                    <Minus size={14} />
+                                                </button>
+                                                <span className="font-bold w-5 text-center tabular-nums">{adults}</span>
+                                                <button type="button" onClick={() => setAdults(adults + 1)} className={STEP_BTN} aria-label="More adults">
+                                                    <Plus size={14} />
                                                 </button>
                                             </div>
                                         </div>
-                                    )}
-                                </div>
+                                        <div className="flex items-center justify-between bg-gray-50 border border-gray-100 rounded-lg px-3 py-2">
+                                            <div>
+                                                <p className="font-bold text-brand-dark text-sm">Children</p>
+                                                <p className="text-[11px] text-gray-500 font-bold">Ages 0-12</p>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <button type="button" onClick={() => setChildren(Math.max(0, children - 1))} disabled={children <= 0} className={STEP_BTN} aria-label="Fewer children">
+                                                    <Minus size={14} />
+                                                </button>
+                                                <span className="font-bold w-5 text-center tabular-nums">{children}</span>
+                                                <button type="button" onClick={() => setChildren(children + 1)} className={STEP_BTN} aria-label="More children">
+                                                    <Plus size={14} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
 
-                                {/* 5. Search/Book Button */}
-                                <div className="p-2">
-                                    <button
-                                        disabled={!startDate || !endDate || isRangeInvalid}
-                                        onClick={() => setStep(2)}
-                                        className="h-full px-8 bg-brand-teal text-white rounded-2xl font-black shadow-lg shadow-brand-teal/20 hover:scale-105 transition-all flex items-center gap-2 disabled:opacity-50 disabled:hover:scale-100"
-                                    >
-                                        <Search size={20} className="stroke-[3px]" />
-                                        <span className="hidden md:inline">Check</span>
-                                    </button>
-                                </div>
+                                {addons.length > 0 && (
+                                    <section className="space-y-2">
+                                        <h3 className={SECTION_H}><span className={SECTION_N}>5</span> Extras <span className="text-gray-500 font-bold">(optional)</span></h3>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                            {addons.map(a => {
+                                                const checked = selectedAddons.includes(a.id);
+                                                return (
+                                                    <button key={a.id} type="button" onClick={() => toggleAddon(a.id)} aria-pressed={checked} className={checked ? EXTRA_ON : EXTRA_OFF}>
+                                                        <span className="flex items-center gap-3">
+                                                            <span className={checked ? DOT_ON : DOT_OFF}>
+                                                                {checked && <Check size={12} className="stroke-[4px]" />}
+                                                            </span>
+                                                            <span className="font-bold text-brand-dark text-sm">{a.name}</span>
+                                                        </span>
+                                                        <span className="font-bold text-checkout-green text-sm">KES {Number(a.price).toLocaleString()}</span>
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                        <p className="text-xs text-gray-500 font-bold">Charged once for the stay, not per night.</p>
+                                    </section>
+                                )}
+
+                                <section className="space-y-2">
+                                    <h3 className={SECTION_H}><span className={SECTION_N}>6</span> Your details</h3>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div className="space-y-1.5">
+                                            <span className={LABEL}>Full name</span>
+                                            <input
+                                                required
+                                                type="text"
+                                                value={guestName}
+                                                onChange={(e) => setGuestName(e.target.value)}
+                                                placeholder="e.g. Jane Doe"
+                                                className={INPUT}
+                                            />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <span className={LABEL}>WhatsApp number</span>
+                                            <input
+                                                required
+                                                type="tel"
+                                                value={guestPhone}
+                                                onChange={(e) => setGuestPhone(e.target.value)}
+                                                placeholder="07XX XXX XXX"
+                                                className={guestPhone && !phoneValid ? INPUT_BAD : INPUT}
+                                            />
+                                            {guestPhone && !phoneValid && (
+                                                <p className="text-xs font-bold text-red-500">Enter a valid Kenyan number</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <section className="space-y-2">
+                                    <h3 className={SECTION_H}><span className={SECTION_N}>7</span> Payment</h3>
+
+                                    <div className="rounded-xl border-2 border-dashed border-checkout-green/40 bg-checkout-green/5 px-4 py-3">
+                                        <span className="block text-[10px] font-bold text-gray-500 uppercase tracking-[0.16em] mb-1">Lipa na M-Pesa · Buy Goods</span>
+                                        <div className="flex items-center gap-2.5">
+                                            <span className="text-2xl font-bold tracking-[0.1em] text-brand-dark">{TILL_NUMBER}</span>
+                                            <button
+                                                type="button"
+                                                onClick={handleCopyTill}
+                                                aria-label="Copy till number"
+                                                className="p-1.5 rounded-md bg-white hover:bg-checkout-green hover:text-white text-gray-500 transition-colors border border-gray-100"
+                                            >
+                                                {tillCopied ? <CheckCircle2 size={15} /> : <Copy size={15} />}
+                                            </button>
+                                        </div>
+                                        <span className="block text-[11px] font-bold text-checkout-green mt-1 tracking-wide">{TILL_NAME}</span>
+                                    </div>
+
+                                    <ol className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-1">
+                                        {paySteps.map((stepText, i) => (
+                                            <li className="flex gap-2 items-start text-[11px] text-gray-600 font-bold" key={i}>
+                                                <span className="w-3.5 h-3.5 rounded-full bg-checkout-green/10 text-checkout-green text-[8px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">{i + 1}</span>
+                                                <span>{stepText}</span>
+                                            </li>
+                                        ))}
+                                    </ol>
+
+                                    <div className="space-y-1.5">
+                                        <span className={LABEL}>M-Pesa code <span className="text-gray-400">(optional)</span></span>
+                                        <input
+                                            type="text"
+                                            value={mpesaCode}
+                                            onChange={(e) => setMpesaCode(e.target.value.toUpperCase())}
+                                            placeholder="e.g. SFK3XY9ABC"
+                                            maxLength={12}
+                                            className={mpesaCode && !mpesaCodeValid ? INPUT_BAD + ' tracking-widest' : INPUT + ' tracking-widest'}
+                                        />
+                                        <p className={mpesaCode && !mpesaCodeValid ? 'text-xs font-bold text-red-500' : 'text-xs font-bold text-gray-500'}>
+                                            {mpesaCode && !mpesaCodeValid
+                                                ? 'That does not look like an M-Pesa code.'
+                                                : 'Already paid? Paste the code. If not, leave blank and pay after sending.'}
+                                        </p>
+                                    </div>
+                                </section>
                             </div>
 
-                            {/* Warning for Invalid Dates */}
-                            {isRangeInvalid && (
-                                <div className="bg-red-50 text-red-500 px-6 py-4 rounded-2xl border border-red-100 flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-500 max-w-md mx-auto">
-                                    <XCircle size={18} />
-                                    <span className="text-xs font-black uppercase tracking-widest">Selected dates unavailable</span>
-                                </div>
-                            )}
+                            {/* ---------------- RIGHT: summary rail ---------------- */}
+                            <aside className="lg:w-[300px] lg:flex-shrink-0 lg:overflow-y-auto border-t lg:border-t-0 lg:border-l border-gray-100 bg-gray-50/70 px-5 sm:px-6 py-5">
+                                <h3 className="font-bold text-brand-dark text-[11px] uppercase tracking-[0.16em] mb-3">Booking Summary</h3>
 
-                            {/* Bottom Actions/Admin */}
-                            <div className="flex justify-center pt-8">
-                                <button
-                                    onClick={() => {
-                                        if (isAdminAuthenticated) setStep(11);
-                                        else setStep(10);
-                                    }}
-                                    className="text-xs font-black text-gray-900 hover:text-brand-teal uppercase tracking-widest flex items-center gap-2 transition-colors"
-                                >
-                                    <ShieldCheck size={14} />
-                                    Management Access
-                                </button>
-                            </div>
-                        </div>
-                    ) : step === 2 ? (
-                        <div className="space-y-8 animate-in slide-in-from-right-16 duration-700">
-                            <div className="bg-brand-teal/5 p-6 rounded-3xl border border-brand-teal/10">
-                                <h4 className="font-black text-brand-dark mb-4 flex items-center gap-2">
-                                    <CheckCircle2 size={18} className="text-brand-teal" />
-                                    Trip Summary
-                                </h4>
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                    <div>
-                                        <span className="block text-xs font-black text-gray-900 uppercase">Check-In</span>
-                                        <span className="font-black text-brand-dark">{startDate && format(startDate, 'MMM dd, yyyy')}</span>
-                                    </div>
-                                    <div>
-                                        <span className="block text-xs font-black text-gray-900 uppercase">Check-Out</span>
-                                        <span className="font-black text-brand-dark">{endDate && format(endDate, 'MMM dd, yyyy')}</span>
-                                    </div>
-                                    <div>
-                                        <span className="block text-xs font-black text-gray-900 uppercase">Room</span>
-                                        <span className="font-black text-brand-dark">{rooms.find(r => r.id === selectedRoom)?.name}</span>
-                                    </div>
-                                    <div>
-                                        <span className="block text-xs font-black text-gray-900 uppercase">Guests</span>
-                                        <span className="font-black text-brand-dark">{adults} Adults, {children} Kids</span>
-                                    </div>
-                                </div>
-                            </div>
+                                <p className="font-bold text-brand-dark text-sm leading-tight">
+                                    {roomType === 'studio' ? STUDIO.label : VILLA.label}
+                                </p>
+                                <p className="text-xs text-gray-500 font-bold mt-0.5">{stayLabel}</p>
 
-                            <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <label className="text-xs font-black text-brand-dark uppercase tracking-wider ml-2">Full Name</label>
-                                    <input
-                                        required
-                                        type="text"
-                                        value={guestName}
-                                        onChange={(e) => setGuestName(e.target.value)}
-                                        placeholder="e.g. John Doe"
-                                        className="w-full p-4 bg-gray-50 border border-gray-100 focus:border-brand-teal focus:bg-white rounded-2xl outline-none transition-all font-bold text-brand-dark"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-black text-brand-dark uppercase tracking-wider ml-2">WhatsApp Number</label>
-                                    <input
-                                        required
-                                        type="tel"
-                                        value={guestPhone}
-                                        onChange={(e) => setGuestPhone(e.target.value)}
-                                        placeholder="+254..."
-                                        className="w-full p-4 bg-gray-50 border border-gray-100 focus:border-brand-teal focus:bg-white rounded-2xl outline-none transition-all font-bold text-brand-dark"
-                                    />
-                                </div>
-                            </div>
+                                {datesChosen && !isRangeInvalid ? (
+                                    <>
+                                        <div className="mt-3 pt-3 border-t border-gray-200 space-y-1.5 text-[13px]">
+                                            <div className="flex justify-between gap-3 text-gray-600 font-bold">
+                                                <span className="min-w-0">{rateLine}</span>
+                                                <span className="flex-shrink-0 text-brand-dark">{roomTotal.toLocaleString()}</span>
+                                            </div>
+                                            {selectedAddonItems.map(a => (
+                                                <div key={a.id} className="flex justify-between gap-3 text-gray-600 font-bold">
+                                                    <span className="min-w-0 truncate">{a.name}</span>
+                                                    <span className="flex-shrink-0 text-brand-dark">{Number(a.price).toLocaleString()}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="flex justify-between items-baseline mt-3 pt-3 border-t border-gray-200">
+                                            <span className="font-bold text-brand-dark text-sm">Total (KES)</span>
+                                            <span className="text-xl font-bold text-brand-dark tracking-tight">{totalAmount.toLocaleString()}</span>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <p className="text-[13px] font-bold text-gray-500 mt-3 pt-3 border-t border-gray-200">
+                                        {isDayRoom ? 'Pick a date to see your total.' : 'Pick your dates to see your total.'}
+                                    </p>
+                                )}
 
-                            <div className="flex gap-4">
-                                <button
-                                    onClick={() => setStep(1)}
-                                    className="px-8 border border-gray-200 text-gray-600 py-4 rounded-2xl font-black hover:bg-gray-50 hover:text-brand-dark transition-all"
-                                >
-                                    Back
-                                </button>
+                                {errorMsg && (
+                                    <div className="mt-3 bg-red-50 text-red-700 px-3 py-2.5 rounded-lg border border-red-100 flex items-start gap-2">
+                                        <AlertCircle size={14} className="mt-0.5 flex-shrink-0" />
+                                        <span className="text-[11px] font-bold">{errorMsg}</span>
+                                    </div>
+                                )}
+                                {roomsLoading && (
+                                    <div className="mt-3 flex items-center gap-2 text-gray-500">
+                                        <Loader2 size={13} className="animate-spin" />
+                                        <span className="text-[10px] font-bold uppercase tracking-widest">Checking availability</span>
+                                    </div>
+                                )}
+
                                 <button
                                     onClick={handleBooking}
-                                    disabled={!guestName || !guestPhone || isLoading}
-                                    className="flex-[2] bg-brand-teal text-white py-4 rounded-2xl font-bold shadow-lg shadow-brand-teal/20 hover:bg-brand-teal/90 hover:-translate-y-0.5 disabled:opacity-50 disabled:translate-y-0 transition-all flex items-center justify-center gap-4 text-lg group"
+                                    disabled={!canBook || isSaving}
+                                    className="w-full mt-4 bg-checkout-green text-white py-3 rounded-xl font-bold text-sm shadow-lg shadow-checkout-green/25 hover:bg-checkout-green-dark disabled:opacity-40 transition-all flex items-center justify-center gap-2"
                                 >
-                                    {isLoading ? (
-                                        <Loader2 size={24} className="animate-spin text-white" />
+                                    {isSaving ? (
+                                        <>
+                                            <Loader2 size={17} className="animate-spin" />
+                                            Securing your dates
+                                        </>
                                     ) : (
                                         <>
-                                            Confirm Booking <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                                            <MessageCircle size={17} />
+                                            Book on WhatsApp
                                         </>
                                     )}
                                 </button>
-                            </div>
-                        </div>
-                    ) : step === 10 ? (
-                        <div className="py-10 flex flex-col items-center justify-center animate-in zoom-in-95 duration-500">
-                            <div className="w-16 h-16 bg-brand-teal/10 text-brand-teal rounded-2xl flex items-center justify-center mb-6">
-                                <ShieldCheck size={32} />
-                            </div>
-                            <h3 className="text-2xl font-black text-brand-dark mb-2 tracking-tighter">Admin Portal</h3>
-                            <p className="text-gray-600 font-bold text-[10px] uppercase tracking-widest mb-8">Access Restricted</p>
 
-                            <form onSubmit={handleAdminLogin} className="w-full max-w-xs space-y-4">
-                                <input
-                                    type="password"
-                                    value={adminPassword}
-                                    onChange={(e) => setAdminPassword(e.target.value)}
-                                    placeholder="Management Key"
-                                    className="w-full p-5 bg-gray-50 border border-gray-200 focus:border-brand-teal rounded-2xl outline-none transition-all font-black text-brand-dark text-center"
-                                    autoFocus
-                                />
-                                {adminError && <p className="text-red-500 text-[10px] font-black uppercase text-center tracking-widest animate-bounce">{adminError}</p>}
-                                <button className="w-full bg-brand-teal text-white py-5 rounded-2xl font-black shadow-xl shadow-brand-teal/20 hover:shadow-brand-teal/40 transition-all hover:scale-[1.02]">
-                                    Unlock
-                                </button>
-                                <button type="button" onClick={() => setStep(1)} className="w-full text-gray-500 font-bold text-xs uppercase tracking-widest pt-2">Exit</button>
-                            </form>
-                        </div>
-                    ) : (
-                        // Admin View (Step 11)
-                        <div className="animate-in slide-in-from-bottom-5 duration-500">
-                            <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
-                                <div className="flex bg-gray-100 p-1 rounded-2xl w-full sm:w-auto">
-                                    <button
-                                        onClick={() => setAdminTab('reservations')}
-                                        className={`flex-1 sm:flex-none px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${adminTab === 'reservations' ? 'bg-white text-brand-teal shadow-sm' : 'text-gray-500'}`}
-                                    >
-                                        Reservations
-                                    </button>
-                                    <button
-                                        onClick={() => setAdminTab('settings')}
-                                        className={`flex-1 sm:flex-none px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${adminTab === 'settings' ? 'bg-white text-brand-teal shadow-sm' : 'text-gray-500'}`}
-                                    >
-                                        Settings
-                                    </button>
-                                </div>
-                                <button onClick={() => setStep(1)} className="text-xs font-black text-brand-teal hover:text-brand-dark uppercase tracking-widest transition-colors">Back to Booking</button>
-                            </div>
-
-                            {adminTab === 'reservations' ? (
-                                <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <h3 className="text-xl font-black text-brand-dark tracking-tighter">Recent Bookings</h3>
-                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{allBookings.length} Total</span>
-                                    </div>
-                                    {allBookings.map(b => (
-                                        <div key={b.id} className={`p-5 rounded-3xl border transition-all ${b.status === 'cancelled' ? 'border-gray-100 bg-gray-50/50 opacity-60' : 'border-gray-200 bg-white hover:border-brand-teal/30 shadow-sm'}`}>
-                                            <div className="flex flex-col sm:flex-row justify-between gap-4">
-                                                <div>
-                                                    <div className="flex items-center gap-3 mb-1">
-                                                        <span className="font-black text-brand-dark">{b.guest_name}</span>
-                                                        <span className="text-[10px] bg-brand-dark/5 px-2 py-0.5 rounded-full font-bold text-gray-600 uppercase">{b.rooms?.name}</span>
-                                                    </div>
-                                                    <div className="text-[11px] font-bold text-gray-600 tracking-wide uppercase flex gap-2">
-                                                        <span>{format(parseISO(b.check_in), 'MMM d')} — {format(parseISO(b.check_out), 'MMM d')}</span>
-                                                        <span className="text-brand-teal">•</span>
-                                                        <span>{b.adults || 1} Ad, {b.children || 0} Ch</span>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    {b.status !== 'cancelled' && (
-                                                        <button
-                                                            onClick={() => handleCancelBooking(b.id)}
-                                                            className="p-2 bg-orange-50 text-orange-500 rounded-lg hover:bg-orange-500 hover:text-white transition-all"
-                                                            title="Cancel Booking"
-                                                        >
-                                                            <XCircle size={16} />
-                                                        </button>
-                                                    )}
-                                                    <button
-                                                        onClick={() => handleDeleteBooking(b.id)}
-                                                        className="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all"
-                                                        title="Delete Permanently"
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="space-y-6 max-h-[550px] overflow-y-auto pr-2 custom-scrollbar pb-8">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <h3 className="text-xl font-black text-brand-dark tracking-tighter">Facility Settings</h3>
-                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Manage Units & Pricing</p>
-                                    </div>
-
-                                    {editingRoom ? (
-                                        <div className="bg-gray-50 rounded-[2rem] p-8 border border-gray-200 animate-in slide-in-from-right-8 duration-500">
-                                            <div className="flex justify-between items-center mb-6">
-                                                <h4 className="font-black text-brand-dark uppercase text-xs tracking-widest">Editing: {editingRoom.name}</h4>
-                                                <button onClick={() => setEditingRoom(null)} className="text-gray-400 hover:text-brand-dark">
-                                                    <X size={18} />
-                                                </button>
-                                            </div>
-
-                                            <form onSubmit={handleUpdateRoom} className="space-y-6">
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    <div className="space-y-2">
-                                                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-2">Display Name</label>
-                                                        <input
-                                                            type="text"
-                                                            value={editingRoom.name}
-                                                            onChange={(e) => setEditingRoom({ ...editingRoom, name: e.target.value })}
-                                                            className="w-full p-4 bg-white border border-gray-100 rounded-2xl outline-none font-bold text-brand-dark focus:border-brand-teal transition-all"
-                                                        />
-                                                    </div>
-                                                    <div className="space-y-2">
-                                                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-2">Price per Night (KES)</label>
-                                                        <input
-                                                            type="number"
-                                                            value={editingRoom.price_per_night}
-                                                            onChange={(e) => setEditingRoom({ ...editingRoom, price_per_night: Number(e.target.value) })}
-                                                            className="w-full p-4 bg-white border border-gray-100 rounded-2xl outline-none font-bold text-brand-dark focus:border-brand-teal transition-all"
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div className="space-y-3">
-                                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-2">Available Amenities</label>
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {PREDEFINED_AMENITIES.map(amenity => (
-                                                            <button
-                                                                type="button"
-                                                                key={amenity}
-                                                                onClick={() => toggleAmenity(editingRoom, amenity)}
-                                                                className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-tighter transition-all ${(editingRoom.amenities || []).includes(amenity)
-                                                                        ? 'bg-brand-teal text-white shadow-md'
-                                                                        : 'bg-white text-gray-400 border border-gray-100 hover:border-brand-teal/30'
-                                                                    }`}
-                                                            >
-                                                                {amenity}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex gap-3 pt-4">
-                                                    <button
-                                                        disabled={isLoading}
-                                                        className="flex-1 bg-brand-teal text-white py-4 rounded-2xl font-black shadow-lg shadow-brand-teal/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center"
-                                                    >
-                                                        {isLoading ? <Loader2 size={20} className="animate-spin" /> : 'Save Changes'}
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setEditingRoom(null)}
-                                                        className="px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest text-gray-400 hover:text-brand-dark transition-colors"
-                                                    >
-                                                        Cancel
-                                                    </button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    ) : (
-                                        <div className="grid grid-cols-1 gap-4">
-                                            {rooms.map(room => (
-                                                <div key={room.id} className="p-6 bg-white border border-gray-200 rounded-[2rem] hover:border-brand-teal/30 shadow-sm transition-all group">
-                                                    <div className="flex justify-between items-start">
-                                                        <div className="space-y-1">
-                                                            <h4 className="font-black text-brand-dark text-lg tracking-tighter">{room.name}</h4>
-                                                            <div className="flex items-center gap-3">
-                                                                <span className="text-brand-teal font-black text-sm">KES {room.price_per_night} /night</span>
-                                                                <span className="text-gray-300">|</span>
-                                                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Max {room.max_guests} Guests</span>
-                                                            </div>
-                                                            <div className="flex flex-wrap gap-1.5 mt-3">
-                                                                {(room.amenities || []).slice(0, 4).map(a => (
-                                                                    <span key={a} className="text-[9px] font-black text-gray-500 bg-gray-50 px-2 py-0.5 rounded-md uppercase tracking-tighter opacity-70 italic">{a}</span>
-                                                                ))}
-                                                                {(room.amenities || []).length > 4 && (
-                                                                    <span className="text-[9px] font-black text-brand-teal/60">+{(room.amenities || []).length - 4} more</span>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                        <button
-                                                            onClick={() => setEditingRoom(room)}
-                                                            className="p-3 bg-gray-50 text-gray-400 rounded-2xl group-hover:bg-brand-teal group-hover:text-white transition-all shadow-sm"
-                                                        >
-                                                            <MoreVertical size={20} />
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            ))}
-
-                                            <button className="p-6 border-2 border-dashed border-gray-200 rounded-[2rem] flex items-center justify-center gap-2 text-gray-400 hover:border-brand-teal hover:text-brand-teal transition-all group">
-                                                <Plus size={20} className="group-hover:scale-110 transition-transform" />
-                                                <span className="font-black uppercase text-xs tracking-widest">Add New Accommodation Type</span>
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
+                                <p className="text-[10px] text-gray-500 font-bold text-center leading-relaxed mt-2">
+                                    Opens WhatsApp with your booking ready to send. No payment is taken on this site.
+                                </p>
+                            </aside>
                         </div>
                     )}
                 </div>

@@ -11,7 +11,6 @@ import {
     Video,
     Wind, // For AC/Fan equivalent (Airy)
     MapPin,
-    ArrowRight,
     Clock,
     Star
 } from 'lucide-react';
@@ -87,14 +86,8 @@ const AmenitiesSection = () => {
                 </div>
 
                 <div className="mt-16 text-center md:text-left border-t border-gray-100 pt-8">
-                    <p className="text-gray-500 text-sm mb-4">
+                    <p className="text-gray-500 text-sm">
                         * Some amenities may vary by unit type (Studio vs Villa).
-                    </p>
-                    <button className="inline-flex items-center justify-center px-6 py-3 border border-gray-900 rounded-lg text-gray-900 font-semibold hover:bg-gray-50 transition-colors">
-                        Show all 30+ amenities <ArrowRight size={18} className="ml-2" />
-                    </button>
-                    <p className="text-xs text-brand-teal mt-2">
-                        (Functionality coming soon)
                     </p>
                 </div>
 

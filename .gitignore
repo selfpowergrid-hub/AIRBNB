@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Stale local snapshot of this project - not part of the app
+PortHill_Final/

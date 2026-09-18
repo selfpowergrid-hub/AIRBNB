@@ -92,8 +92,8 @@ export default function Home() {
             <span>3 mins from Eldoret International Airport • 100 meters off tarmac</span>
           </div>
 
-          <h1 className="text-4xl md:text-6xl font-extrabold text-white tracking-tight leading-tight">
-            The Smartest Way to <br /> <span className="text-brand-teal">Fly & Stay</span>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight leading-tight">
+            Home Away From Home <br /> <span className="text-brand-teal">Where Comfort Meets Convenience</span>
           </h1>
 
           <p className="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto">
@@ -115,30 +115,41 @@ export default function Home() {
       </section>
 
       {/* Answer Section: The 3 Questions */}
-      <section className="py-12 bg-white relative -mt-20 z-20 max-w-6xl mx-auto rounded-xl shadow-2xl mx-4 lg:mx-auto grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-100">
-        <div className="p-8 text-center space-y-3 group hover:bg-gray-50 transition-colors rounded-l-xl">
-          <div className="w-12 h-12 bg-brand-teal/10 text-brand-teal rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
-            <MapPin size={24} className="text-brand-teal" />
+      <section className="relative -mt-20 z-20 max-w-6xl mx-4 lg:mx-auto grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
+        <div className="group relative flex flex-col items-center text-center bg-white rounded-2xl p-8 shadow-lg ring-1 ring-gray-900/5 overflow-hidden transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-2xl hover:shadow-brand-teal/10 hover:ring-brand-teal/30">
+          <span aria-hidden className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-teal to-teal-400 origin-left scale-x-0 transition-transform duration-300 ease-out group-hover:scale-x-100" />
+          <div className="relative w-16 h-16 mb-5 rounded-2xl bg-brand-teal/10 flex items-center justify-center transition-all duration-300 ease-out group-hover:bg-brand-teal group-hover:scale-110 group-hover:-rotate-6 group-hover:shadow-lg group-hover:shadow-brand-teal/40">
+            <MapPin size={28} className="text-brand-teal transition-colors duration-300 group-hover:text-white" />
           </div>
-          <h3 className="font-bold text-gray-900 text-lg">Where am I?</h3>
-          <p className="text-gray-600 text-sm">Located on the airport road, exactly <strong className="text-brand-teal">3 mins</strong> from the main gate and <strong className="text-brand-teal">100 meters</strong> off the tarmac. You can't get closer without a boarding pass.</p>
+          <h3 className="font-bold text-gray-900 text-xl mb-2 transition-colors duration-300 group-hover:text-brand-teal">Where are we?</h3>
+          <p className="text-gray-600 text-base leading-relaxed">We are on the airport road, just <strong className="text-brand-teal">3 minutes</strong> from the main gate and <strong className="text-brand-teal">100 meters</strong> off the tarmac. Rest with us and be at check-in within minutes.</p>
         </div>
-        <div className="p-8 text-center space-y-3 group hover:bg-gray-50 transition-colors">
-          <div className="w-12 h-12 bg-brand-teal/10 text-brand-teal rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
-            <ShieldCheck size={24} className="text-brand-teal" />
+
+        <div className="group relative flex flex-col items-center text-center bg-white rounded-2xl p-8 shadow-lg ring-1 ring-gray-900/5 overflow-hidden transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-2xl hover:shadow-brand-teal/10 hover:ring-brand-teal/30">
+          <span aria-hidden className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-teal to-teal-400 origin-left scale-x-0 transition-transform duration-300 ease-out group-hover:scale-x-100" />
+          <div className="relative w-16 h-16 mb-5 rounded-2xl bg-brand-teal/10 flex items-center justify-center transition-all duration-300 ease-out group-hover:bg-brand-teal group-hover:scale-110 group-hover:-rotate-6 group-hover:shadow-lg group-hover:shadow-brand-teal/40">
+            <ShieldCheck size={28} className="text-brand-teal transition-colors duration-300 group-hover:text-white" />
           </div>
-          <h3 className="font-bold text-gray-900 text-lg">Why stay here?</h3>
-          <p className="text-gray-600 text-sm">Good for people waiting for a delayed flight, refreshing before or after travel, avoiding a night in Eldoret town for a morning flight, or students saying bye to loved ones. <strong className="text-brand-teal">24/7 Security</strong>.</p>
+          <h3 className="font-bold text-gray-900 text-xl mb-2 transition-colors duration-300 group-hover:text-brand-teal">Why choose us?</h3>
+          <p className="text-gray-600 text-base leading-relaxed">Whether you are waiting out a delayed flight, refreshing before or after travel, avoiding an early start from Eldoret town, or seeing loved ones off, we are built around the airport schedule. <strong className="text-brand-teal">24/7 Security</strong>.</p>
         </div>
-        <div className="p-8 text-center space-y-3 group hover:bg-gray-50 transition-colors rounded-r-xl">
-          <div className="w-12 h-12 bg-brand-teal/10 text-brand-teal rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform"
-            onClick={() => handleOpenBooking()}
-          >
-            <Clock size={24} className="text-brand-teal cursor-pointer" />
+
+        <button
+          type="button"
+          onClick={() => handleOpenBooking()}
+          aria-label="Open the booking form"
+          className="group relative flex flex-col items-center text-center bg-white rounded-2xl p-8 shadow-lg ring-1 ring-gray-900/5 overflow-hidden transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-2xl hover:shadow-brand-teal/10 hover:ring-brand-teal/30 cursor-pointer text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-teal focus-visible:ring-offset-2"
+        >
+          <span aria-hidden className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-teal to-teal-400 origin-left scale-x-0 transition-transform duration-300 ease-out group-hover:scale-x-100" />
+          <div className="relative w-16 h-16 mb-5 rounded-2xl bg-brand-teal/10 flex items-center justify-center transition-all duration-300 ease-out group-hover:bg-brand-teal group-hover:scale-110 group-hover:-rotate-6 group-hover:shadow-lg group-hover:shadow-brand-teal/40">
+            <Clock size={28} className="text-brand-teal transition-colors duration-300 group-hover:text-white" />
           </div>
-          <h3 className="font-bold text-gray-900 text-lg">How do I book?</h3>
-          <p className="text-gray-600 text-sm">Instant confirmation via our engine or call <strong className="text-brand-teal">0757717616</strong>. M-Pesa enabled.</p>
-        </div>
+          <h3 className="font-bold text-gray-900 text-xl mb-2 transition-colors duration-300 group-hover:text-brand-teal">How to book</h3>
+          <p className="text-gray-600 text-base leading-relaxed">Book online for instant confirmation, or call <strong className="text-brand-teal">0757717616</strong>. <strong className="text-brand-teal">M-Pesa</strong> accepted.</p>
+          <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-brand-teal transition-all duration-300 group-hover:gap-3">
+            Check availability <ArrowRight size={16} />
+          </span>
+        </button>
       </section>
 
       <AccommodationSection onOpenBooking={handleOpenBooking} />

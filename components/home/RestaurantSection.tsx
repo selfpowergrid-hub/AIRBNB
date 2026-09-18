@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { Utensils, Music, CircleDot, Maximize2 } from "lucide-react";
+import { Utensils, Music, CircleDot, Maximize2, Flame } from "lucide-react";
 import ImageGallery from "@/components/features/ImageGallery";
 
 export default function RestaurantSection() {
@@ -72,6 +72,23 @@ export default function RestaurantSection() {
                                 <div>
                                     <h3 className="font-bold text-gray-900 text-xl">Cool Music & Vibe</h3>
                                     <p className="text-gray-600 text-sm mt-1">Sink into comfort with expertly curated playlists creating a smooth, relaxing ambiance.</p>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-4 items-start">
+                                <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0 border border-gray-100">
+                                    <Flame className="text-brand-teal" size={24} />
+                                </div>
+                                <div className="w-full">
+                                    <h3 className="font-bold text-gray-900 text-xl">Bonfire Experience</h3>
+                                    <p className="text-gray-600 text-sm mt-1">Gather around the fire under the Eldoret sky. Take the space on its own, or add what you need.</p>
+                                    <ul className="mt-3 space-y-1 text-sm max-w-xs">
+                                        <li className="flex justify-between border-b border-gray-200/70 pb-1"><span className="text-gray-600">Space</span><span className="font-semibold text-gray-900">KES 1,500</span></li>
+                                        <li className="flex justify-between border-b border-gray-200/70 pb-1"><span className="text-gray-600">Firewood</span><span className="font-semibold text-gray-900">KES 500</span></li>
+                                        <li className="flex justify-between border-b border-gray-200/70 pb-1"><span className="text-gray-600">Charcoal</span><span className="font-semibold text-gray-900">KES 500</span></li>
+                                        <li className="flex justify-between border-b border-gray-200/70 pb-1"><span className="text-gray-600">Grill</span><span className="font-semibold text-gray-900">KES 500</span></li>
+                                        <li className="flex justify-between pt-1"><span className="font-bold text-gray-900">Full package</span><span className="font-bold text-brand-teal">KES 3,000</span></li>
+                                    </ul>
                                 </div>
                             </div>
                         </div>

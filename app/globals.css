@@ -6,6 +6,12 @@
   --color-brand-accent: #260e1b;
   --color-brand-light: #f5f7fa;
 
+  /* Checkout form only. Not part of the site palette - used exclusively by
+     components/features/BookingModal.tsx. */
+  --color-checkout-green: #0B6E4F;
+  --color-checkout-green-dark: #084B37;
+  --color-checkout-green-soft: #E7F3EC;
+
   --font-sans: var(--font-inter);
 }
 
