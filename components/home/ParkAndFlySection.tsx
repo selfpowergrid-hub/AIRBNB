@@ -1,7 +1,7 @@
 
 import React from 'react';
 import Image from 'next/image';
-import { ShieldCheck, Map, Clock, Video } from 'lucide-react';
+import { ShieldCheck, Clock } from 'lucide-react';
 
 const ParkAndFlySection = () => {
     return (
@@ -54,8 +54,9 @@ const ParkAndFlySection = () => {
                             <div className="bg-gray-700 h-96 rounded-2xl flex items-center justify-center relative overflow-hidden group">
                                 <Image
                                     src="/assets/secure-parking.png"
-                                    alt="Secure Parking Lot"
+                                    alt="Secure fenced parking lot at Port Hill, close to Eldoret International Airport"
                                     fill
+                                    sizes="(min-width: 1024px) 50vw, 100vw"
                                     className="object-cover opacity-90 group-hover:opacity-100 transition-opacity"
                                 />
 

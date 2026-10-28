@@ -17,6 +17,49 @@ import { NextResponse } from 'next/server';
 
 const GRAPH_VERSION = 'v21.0';
 
+// Basic abuse protection. This endpoint is public (guests are not signed in), so
+// without limits anyone could use it to spam the property's WhatsApp number.
+// The counter is in-memory, i.e. best effort per server instance - enough to stop
+// casual abuse; add a shared store (e.g. Upstash Redis) if stronger limits are needed.
+const RATE_LIMIT = 5;
+const RATE_WINDOW_MS = 10 * 60 * 1000;
+const MAX_BODY_BYTES = 4096;
+const hits = new Map<string, number[]>();
+
+function rateLimited(ip: string): boolean {
+    const now = Date.now();
+    const recent = (hits.get(ip) || []).filter((t) => now - t < RATE_WINDOW_MS);
+    recent.push(now);
+    hits.set(ip, recent);
+    if (hits.size > 5000) {
+        for (const [k, v] of hits) if (v.every((t) => now - t >= RATE_WINDOW_MS)) hits.delete(k);
+    }
+    return recent.length > RATE_LIMIT;
+}
+
+function clean(value: unknown, max = 120): string | undefined {
+    if (typeof value !== 'string') return undefined;
+    return value.replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, max) || undefined;
+}
+
+function sanitize(raw: unknown): BookingAlert {
+    const r = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
+    const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : undefined);
+    return {
+        bookingRef: clean(r.bookingRef, 40),
+        guestName: clean(r.guestName),
+        guestPhone: clean(r.guestPhone, 30),
+        roomName: clean(r.roomName),
+        checkIn: clean(r.checkIn, 20),
+        checkOut: clean(r.checkOut, 20),
+        nights: num(r.nights),
+        guests: clean(r.guests),
+        addons: clean(r.addons, 300),
+        total: num(r.total),
+        mpesaCode: clean(r.mpesaCode, 30),
+    };
+}
+
 interface BookingAlert {
     bookingRef?: string;
     guestName?: string;
@@ -31,7 +74,7 @@ interface BookingAlert {
     mpesaCode?: string;
 }
 
-export function buildAlertText(b: BookingAlert): string {
+function buildAlertText(b: BookingAlert): string {
     const lines = [
         'NEW BOOKING - ' + (b.bookingRef || 'no ref'),
         '',
@@ -59,9 +102,18 @@ export async function POST(request: Request) {
     const to = process.env.WHATSAPP_ALERT_TO;
     const template = process.env.WHATSAPP_TEMPLATE;
 
+    const ip = (request.headers.get('x-forwarded-for') || 'unknown').split(',')[0].trim();
+    if (rateLimited(ip)) {
+        return NextResponse.json({ ok: false, reason: 'rate_limited' }, { status: 429 });
+    }
+
     let booking: BookingAlert;
     try {
-        booking = await request.json();
+        const body = await request.text();
+        if (body.length > MAX_BODY_BYTES) {
+            return NextResponse.json({ ok: false, error: 'Request too large.' }, { status: 413 });
+        }
+        booking = sanitize(JSON.parse(body));
     } catch {
         return NextResponse.json({ ok: false, error: 'Invalid request.' }, { status: 400 });
     }

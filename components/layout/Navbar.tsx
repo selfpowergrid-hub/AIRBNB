@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X, Phone, MapPin } from 'lucide-react';
+import { Menu, X, Phone } from 'lucide-react';
 import TopBar from '../features/TopBar';
 import BookingModal from '../features/BookingModal';
 
@@ -33,10 +33,10 @@ const Navbar = () => {
                             <div className="hidden md:block">
                                 <div className="ml-10 flex items-baseline space-x-8">
                                     <Link href="/" className="hover:text-brand-teal transition-colors px-3 py-2 text-sm font-medium">Home</Link>
-                                    <Link href="#accommodation" className="hover:text-brand-teal transition-colors px-3 py-2 text-sm font-medium">Accommodation</Link>
-                                    <Link href="#lounge" className="hover:text-brand-teal transition-colors px-3 py-2 text-sm font-medium">Lounge Area</Link>
-                                    <Link href="#park-fly" className="hover:text-brand-teal transition-colors px-3 py-2 text-sm font-medium">Secure Parking</Link>
-                                    <Link href="#location" className="hover:text-brand-teal transition-colors px-3 py-2 text-sm font-medium">Location</Link>
+                                    <Link href="/#accommodation" className="hover:text-brand-teal transition-colors px-3 py-2 text-sm font-medium">Accommodation</Link>
+                                    <Link href="/#lounge" className="hover:text-brand-teal transition-colors px-3 py-2 text-sm font-medium">Lounge Area</Link>
+                                    <Link href="/#park-fly" className="hover:text-brand-teal transition-colors px-3 py-2 text-sm font-medium">Secure Parking</Link>
+                                    <Link href="/#location" className="hover:text-brand-teal transition-colors px-3 py-2 text-sm font-medium">Location</Link>
                                 </div>
                             </div>
 
@@ -68,10 +68,10 @@ const Navbar = () => {
                         <div className="md:hidden bg-brand-dark border-b border-brand-teal/20">
                             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
                                 <Link href="/" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium hover:text-brand-teal hover:bg-gray-900">Home</Link>
-                                <Link href="#accommodation" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium hover:text-brand-teal hover:bg-gray-900">Accommodation</Link>
-                                <Link href="#lounge" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium hover:text-brand-teal hover:bg-gray-900">Lounge Area</Link>
-                                <Link href="#park-fly" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium hover:text-brand-teal hover:bg-gray-900">Secure Parking</Link>
-                                <Link href="#location" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium hover:text-brand-teal hover:bg-gray-900">Location</Link>
+                                <Link href="/#accommodation" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium hover:text-brand-teal hover:bg-gray-900">Accommodation</Link>
+                                <Link href="/#lounge" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium hover:text-brand-teal hover:bg-gray-900">Lounge Area</Link>
+                                <Link href="/#park-fly" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium hover:text-brand-teal hover:bg-gray-900">Secure Parking</Link>
+                                <Link href="/#location" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md text-base font-medium hover:text-brand-teal hover:bg-gray-900">Location</Link>
                                 <button
                                     onClick={() => { setIsOpen(false); setIsBookingOpen(true); }}
                                     className="block w-full text-center mt-4 bg-brand-teal text-white py-3 rounded-md font-bold"

@@ -62,7 +62,7 @@ const AccommodationSection = ({ onOpenBooking }: Props) => {
                 <div className="text-center mb-16">
                     <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Tailored for Every Traveler</h2>
                     <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-2">
-                        Very nice, sizeable and clean rooms. Whether you're a corporate guest needing efficiency or a family requiring space, we have the perfect unit.
+                        Very nice, sizeable and clean rooms. Whether you&apos;re a corporate guest needing efficiency or a family requiring space, we have the perfect unit.
                     </p>
                 </div>
 
@@ -82,8 +82,9 @@ const AccommodationSection = ({ onOpenBooking }: Props) => {
                                 >
                                     <Image
                                         src={src}
-                                        alt="Efficiency Studio"
+                                        alt={`Efficiency studio at Port Hill, photo ${index + 1}`}
                                         fill
+                                        sizes="(min-width: 1024px) 50vw, 100vw"
                                         className="object-cover animate-ken-burns"
                                         priority={index === 0}
                                     />
@@ -157,8 +158,9 @@ const AccommodationSection = ({ onOpenBooking }: Props) => {
                                 >
                                     <Image
                                         src={src}
-                                        alt="5-Bedroom Executive Villa"
+                                        alt={`5-bedroom executive villa at Port Hill, photo ${index + 1}`}
                                         fill
+                                        sizes="(min-width: 1024px) 50vw, 100vw"
                                         className="object-cover animate-ken-burns"
                                         priority={index === 0}
                                     />

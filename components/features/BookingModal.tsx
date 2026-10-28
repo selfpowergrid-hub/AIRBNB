@@ -484,7 +484,7 @@ const BookingModal = ({ isOpen, onClose, initialRoomId }: BookingModalProps) => 
     };
 
     // Helper for rendering calendar popover
-    const CalendarPopover = ({ type }: { type: 'start' | 'end' }) => (
+    const renderCalendarPopover = (type: 'start' | 'end') => (
         <div
             onClick={(e) => e.stopPropagation()}
             className="absolute top-full mt-2 left-0 z-50 bg-white rounded-3xl shadow-2xl border border-gray-100 animate-in fade-in zoom-in-95 duration-200 overflow-hidden min-w-[340px]"
@@ -756,7 +756,7 @@ const BookingModal = ({ isOpen, onClose, initialRoomId }: BookingModalProps) => 
                                                     </span>
                                                 </div>
                                             </div>
-                                            {activePopover === 'start' && <CalendarPopover type="start" />}
+                                            {activePopover === 'start' && renderCalendarPopover('start')}
                                         </div>
 
                                         {!isDayRoom && (
@@ -772,7 +772,7 @@ const BookingModal = ({ isOpen, onClose, initialRoomId }: BookingModalProps) => 
                                                             </span>
                                                         </div>
                                                     </div>
-                                                    {activePopover === 'end' && <CalendarPopover type="end" />}
+                                                    {activePopover === 'end' && renderCalendarPopover('end')}
                                                 </div>
                                             </>
                                         )}
@@ -879,7 +879,7 @@ const BookingModal = ({ isOpen, onClose, initialRoomId }: BookingModalProps) => 
                                     <h3 className={SECTION_H}><span className={SECTION_N}>7</span> Payment</h3>
 
                                     <div className="rounded-xl border-2 border-dashed border-checkout-green/40 bg-checkout-green/5 px-4 py-3">
-                                        <span className="block text-[10px] font-bold text-gray-500 uppercase tracking-[0.16em] mb-1">Lipa na M-Pesa · Buy Goods</span>
+                                        <span className="block text-[10px] font-bold text-gray-500 uppercase tracking-[0.16em] mb-1">Lipa na M-Pesa &middot; Buy Goods</span>
                                         <div className="flex items-center gap-2.5">
                                             <span className="text-2xl font-bold tracking-[0.1em] text-brand-dark">{TILL_NUMBER}</span>
                                             <button

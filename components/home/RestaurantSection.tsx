@@ -50,8 +50,8 @@ export default function RestaurantSection() {
                                     <Utensils className="text-brand-teal" size={24} />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-gray-900 text-xl">Restaurant & Dining</h3>
-                                    <p className="text-gray-600 text-sm mt-1">Enjoy a hearty meal or a quick bite from our diverse menu, freshly prepared for our guests.</p>
+                                    <h3 className="font-bold text-gray-900 text-xl">Meals, Restaurant & Dining</h3>
+                                    <p className="text-gray-600 text-sm mt-1">Meals are available for guests and visitors: enjoy a hearty meal or a quick bite from our diverse menu, freshly prepared for you.</p>
                                 </div>
                             </div>
 
@@ -108,8 +108,9 @@ export default function RestaurantSection() {
                             >
                                 <Image
                                     src={src}
-                                    alt="Port Hill Lounge Area"
+                                    alt={`Port Hill lounge area, photo ${index + 1}`}
                                     fill
+                                    sizes="(min-width: 1024px) 50vw, 100vw"
                                     className="object-cover animate-ken-burns"
                                     priority={index === 0}
                                 />

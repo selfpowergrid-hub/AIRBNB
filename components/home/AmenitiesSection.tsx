@@ -7,6 +7,7 @@ import {
     Tv,
     Coffee,
     Utensils,
+    UtensilsCrossed,
     Briefcase,
     Video,
     Wind, // For AC/Fan equivalent (Airy)
@@ -42,6 +43,7 @@ const amenities = [
     {
         category: "Kitchen & Dining",
         items: [
+            { icon: UtensilsCrossed, label: "Meals Available at Our Lounge Restaurant" },
             { icon: Coffee, label: "Coffee Maker & Kettle" },
             { icon: Utensils, label: "Fully Equipped Kitchenette" } // Assuming for studios/villa
         ]
@@ -113,7 +115,7 @@ const AmenitiesSection = () => {
                                     <Star size={20} /> Frequent Clients
                                 </h3>
                                 <p className="text-gray-700">
-                                    We value our returning guests. <strong>There is always more for a recent or frequent client.</strong> Let us know you've stayed with us before for special considerations!
+                                    We value our returning guests. <strong>There is always more for a recent or frequent client.</strong> Let us know you&apos;ve stayed with us before for special considerations!
                                 </p>
                             </div>
                         </div>

@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Port Hill Guest and Accommodation
 
-## Getting Started
+Website and booking system for Port Hill Guest and Accommodation, 3 minutes from Eldoret International Airport.
+Live at https://www.porthillguest.co.ke
 
-First, run the development server:
+Built with Next.js (App Router), Tailwind CSS 4 and Supabase.
+
+## Getting started
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # then fill in the values
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Scripts
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Command | What it does |
+|---------|--------------|
+| `npm run dev` | Development server |
+| `npm run build` | Production build |
+| `npm start` | Run the production build |
+| `npm run lint` | ESLint |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Environment variables
 
-## Learn More
+See [.env.example](.env.example). Set the same variables in your hosting provider (e.g. Vercel project settings).
 
-To learn more about Next.js, take a look at the following resources:
+## Database
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Apply the `supabase_migration_*.sql` files in the Supabase SQL editor. `supabase_migration_lockdown.sql` is required in
+production: it stops the public key from reading guest names and phone numbers.
+Staff accounts are created in Supabase (Authentication > Users) and sign in at `/manage-bookings`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deployment
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Deploy on Vercel (or any Node host). Pushing to `main` triggers a deploy. After the first deploy, submit
+`/sitemap.xml` in Google Search Console.

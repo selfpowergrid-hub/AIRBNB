@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { Globe, ChevronDown, Facebook, MessageCircle } from 'lucide-react';
+import { Facebook, MessageCircle } from 'lucide-react';
 
 const TopBar = () => {
     return (
@@ -23,33 +23,7 @@ const TopBar = () => {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-6 ml-auto">
-                    {/* Currency Toggle */}
-                    <div className="relative group cursor-pointer flex items-center gap-1">
-                        <span>KES</span>
-                        <ChevronDown size={14} />
-
-                        <div className="absolute top-full right-0 mt-2 bg-white text-gray-900 rounded-md shadow-lg p-2 min-w-[80px] hidden group-hover:block">
-                            <div className="hover:bg-gray-100 px-2 py-1 rounded cursor-pointer">KES</div>
-                            <div className="hover:bg-gray-100 px-2 py-1 rounded cursor-pointer">USD</div>
-                            <div className="hover:bg-gray-100 px-2 py-1 rounded cursor-pointer">EUR</div>
-                        </div>
-                    </div>
-
-                    {/* Language Toggle */}
-                    <div className="relative group cursor-pointer flex items-center gap-1">
-                        <Globe size={14} />
-                        <span>EN</span>
-                        <ChevronDown size={14} />
-
-                        <div className="absolute top-full right-0 mt-2 bg-white text-gray-900 rounded-md shadow-lg p-2 min-w-[100px] hidden group-hover:block">
-                            <div className="hover:bg-gray-100 px-2 py-1 rounded cursor-pointer flex items-center gap-2">🇬🇧 EN</div>
-                            <div className="hover:bg-gray-100 px-2 py-1 rounded cursor-pointer flex items-center gap-2">🇩🇪 DE</div>
-                            <div className="hover:bg-gray-100 px-2 py-1 rounded cursor-pointer flex items-center gap-2">🇫🇷 FR</div>
-                            <div className="hover:bg-gray-100 px-2 py-1 rounded cursor-pointer flex items-center gap-2">🇰🇪 SW</div>
-                        </div>
-                    </div>
-                </div>
+                <div className="ml-auto text-xs font-medium">Open 24/7 &middot; 3 mins from Eldoret International Airport</div>
             </div>
         </div>
     );

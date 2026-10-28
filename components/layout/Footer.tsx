@@ -1,11 +1,11 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Phone, Mail, MapPin, Facebook, MessageCircle } from 'lucide-react';
+import { Mail, MapPin, Facebook, MessageCircle } from 'lucide-react';
 
 const Footer = () => {
     return (
-        <footer className="bg-brand-dark text-white pt-16 pb-8 border-t border-gray-800">
+        <footer id="location" className="bg-brand-dark text-white pt-16 pb-8 border-t border-gray-800">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
                     {/* Brand Column */}
@@ -27,11 +27,11 @@ const Footer = () => {
                     <div>
                         <h3 className="text-brand-teal font-semibold mb-4 uppercase tracking-wider text-sm">Quick Links</h3>
                         <ul className="space-y-2">
-                            <li><Link href="#home" className="text-gray-300 hover:text-brand-teal transition-colors">Home</Link></li>
-                            <li><Link href="#accommodation" className="text-gray-300 hover:text-brand-teal transition-colors">Accommodation</Link></li>
-                            <li><Link href="#lounge" className="text-gray-300 hover:text-brand-teal transition-colors">Lounge Area</Link></li>
-                            <li><Link href="#park-fly" className="text-gray-300 hover:text-brand-teal transition-colors">Secure Parking</Link></li>
-                            <li><Link href="#contact" className="text-gray-300 hover:text-brand-teal transition-colors">Contact Us</Link></li>
+                            <li><Link href="/#home" className="text-gray-300 hover:text-brand-teal transition-colors">Home</Link></li>
+                            <li><Link href="/#accommodation" className="text-gray-300 hover:text-brand-teal transition-colors">Accommodation</Link></li>
+                            <li><Link href="/#lounge" className="text-gray-300 hover:text-brand-teal transition-colors">Lounge Area</Link></li>
+                            <li><Link href="/#park-fly" className="text-gray-300 hover:text-brand-teal transition-colors">Secure Parking</Link></li>
+                            <li><Link href="/#contact" className="text-gray-300 hover:text-brand-teal transition-colors">Contact Us</Link></li>
                         </ul>
                     </div>
 
@@ -55,7 +55,13 @@ const Footer = () => {
                 </div>
 
                 <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
-                    <p>&copy; {new Date().getFullYear()} Port Hill Guest. All rights reserved.</p>
+                    <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-6">
+                        <p>&copy; {new Date().getFullYear()} Port Hill Guest. All rights reserved.</p>
+                        <div className="flex gap-4">
+                            <Link href="/privacy" className="hover:text-brand-teal transition-colors">Privacy Policy</Link>
+                            <Link href="/terms" className="hover:text-brand-teal transition-colors">Terms of Service</Link>
+                        </div>
+                    </div>
                     <div className="flex gap-5">
                         <a href="https://facebook.com/porthillguest" target="_blank" rel="noopener noreferrer" className="hover:text-brand-teal transition-all hover:scale-110">
                             <Facebook size={22} />

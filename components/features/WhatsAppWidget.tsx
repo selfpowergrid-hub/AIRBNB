@@ -6,7 +6,7 @@ import { MessageCircle } from 'lucide-react';
 
 const WhatsAppWidget = () => {
     const message = encodeURIComponent(
-        "Hi Port Hill! 👋 I'm visiting your website and would love to know more about your rooms and availability."
+        "Hi Port Hill! I'm visiting your website and would love to know more about your rooms and availability."
     );
 
     return (

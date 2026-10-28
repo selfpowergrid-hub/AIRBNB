@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
-import { X, ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface ImageGalleryProps {
     images: string[];
@@ -14,10 +14,16 @@ interface ImageGalleryProps {
 
 export default function ImageGallery({ images, initialIndex = 0, isOpen, onClose, title }: ImageGalleryProps) {
     const [currentIndex, setCurrentIndex] = useState(initialIndex);
+    const [prevOpen, setPrevOpen] = useState(isOpen);
+
+    // Reset to the requested image whenever the gallery is opened.
+    if (isOpen !== prevOpen) {
+        setPrevOpen(isOpen);
+        if (isOpen) setCurrentIndex(initialIndex);
+    }
 
     useEffect(() => {
         if (isOpen) {
-            setCurrentIndex(initialIndex);
             document.body.style.overflow = "hidden";
         } else {
             document.body.style.overflow = "unset";
@@ -25,7 +31,7 @@ export default function ImageGallery({ images, initialIndex = 0, isOpen, onClose
         return () => {
             document.body.style.overflow = "unset";
         };
-    }, [isOpen, initialIndex]);
+    }, [isOpen]);
 
     const handlePrevious = useCallback(() => {
         setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
@@ -90,8 +96,8 @@ export default function ImageGallery({ images, initialIndex = 0, isOpen, onClose
                         src={images[currentIndex]}
                         alt={`${title} - Image ${currentIndex + 1}`}
                         fill
+                        sizes="100vw"
                         className="object-contain"
-                        priority
                     />
                 </div>
             </div>

@@ -64,7 +64,7 @@ export default function Home() {
       />
 
       {/* Hero Section */}
-      <section className="relative h-[85vh] w-full flex items-center justify-center overflow-hidden">
+      <section id="home" className="relative h-[85vh] w-full flex items-center justify-center overflow-hidden">
         {/* Background Image Carousel */}
         <div className="absolute inset-0 z-0 bg-black">
           {heroImages.map((src, index) => (
@@ -76,8 +76,9 @@ export default function Home() {
             >
               <Image
                 src={src}
-                alt="Port Hill Guest House Welcome"
+                alt={`Port Hill Guest House, photo ${index + 1} of ${heroImages.length}`}
                 fill
+                sizes="100vw"
                 className="object-cover object-center brightness-50 animate-ken-burns"
                 priority={index === 0}
               />
@@ -89,7 +90,7 @@ export default function Home() {
         <div className="relative z-10 text-center max-w-4xl px-4 sm:px-6 lg:px-8 space-y-6">
           <div className="inline-flex items-center gap-2 bg-brand-teal/90 text-white px-4 py-1.5 rounded-full text-sm font-semibold mb-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <Plane size={16} className="animate-pulse" />
-            <span>3 mins from Eldoret International Airport • 100 meters off tarmac</span>
+            <span>3 mins from Eldoret International Airport &middot; 100 meters off tarmac</span>
           </div>
 
           <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight leading-tight">
@@ -97,7 +98,7 @@ export default function Home() {
           </h1>
 
           <p className="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto">
-            Premium efficiency studios, an executive Airbnb, a vibrant <strong>Lounge Area</strong>, and ample secure parking. Perfectly positioned just <strong>3 minutes from the gates of Eldoret International Airport</strong>, and a mere 100 meters off the tarmac.
+            Premium efficiency studios, an executive Airbnb, a vibrant <strong>Lounge Area</strong> serving freshly prepared <strong>meals</strong>, and ample secure parking. Perfectly positioned just <strong>3 minutes from the gates of Eldoret International Airport</strong>, and a mere 100 meters off the tarmac.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
@@ -161,7 +162,7 @@ export default function Home() {
       <ParkAndFlySection />
 
       {/* Final CTA */}
-      <section className="py-20 bg-brand-teal text-white text-center">
+      <section id="contact" className="py-20 bg-brand-teal text-white text-center">
         <div className="max-w-4xl mx-auto px-4">
           <h2 className="text-4xl font-bold mb-6">Ready to Experience Port Hill?</h2>
           <p className="text-xl mb-8 opacity-90">Secure your stay or parking spot today and travel with zero stress.</p>
